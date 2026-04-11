@@ -40,9 +40,13 @@ def get_portfolio_analytics(holdings: list[dict]) -> dict:
 
             if hist.empty:
                 current_price = cost_basis  # fallback
+                sparkline = []
             else:
                 current_price = float(hist["Close"].iloc[-1])
                 price_data[t] = hist["Close"].copy()
+                # Last 30 data points for sparkline
+                recent = hist["Close"].tail(30)
+                sparkline = [round(float(v), 2) for v in recent.values]
 
             market_value = qty * current_price if qty else current_price
             gain_loss = (current_price - cost_basis) * qty if qty and cost_basis else 0
@@ -61,6 +65,7 @@ def get_portfolio_analytics(holdings: list[dict]) -> dict:
                 "asset_class": asset_class,
                 "qty": qty,
                 "cost_basis": cost_basis,
+                "sparkline": sparkline,
             }
         except Exception as e:
             print(f"Error fetching {t}: {e}")
@@ -74,6 +79,7 @@ def get_portfolio_analytics(holdings: list[dict]) -> dict:
                 "asset_class": "Unknown",
                 "qty": qty,
                 "cost_basis": cost_basis,
+                "sparkline": [],
             }
 
     # -----------------------------------------------------------------------

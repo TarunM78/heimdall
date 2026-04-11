@@ -56,7 +56,7 @@ body {
     font-family: var(--font);
     background: var(--bg);
     color: var(--text-1);
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     background-image:
         radial-gradient(ellipse 60% 40% at 5% 0%, rgba(79,158,255,0.07) 0%, transparent 60%),
@@ -178,6 +178,7 @@ a { color: var(--brand); }
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0;
 }
 
 /* ---- Top Bar ---- */
@@ -204,6 +205,7 @@ a { color: var(--brand); }
     flex: 1;
     overflow-y: auto;
     padding: 2rem 2.5rem;
+    min-height: 0;
 }
 
 /* ---- Tabs ---- */
@@ -394,6 +396,130 @@ a { color: var(--brand); }
 .position-meta span { color: var(--text-2); font-weight: 600; }
 
 /* ===========================================
+   TOOLTIP
+   =========================================== */
+.has-tooltip {
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dashed var(--text-3);
+    display: inline-block;
+}
+.has-tooltip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a2235;
+    border: 1px solid var(--border-active);
+    color: var(--text-1);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    padding: 0.5rem 0.8rem;
+    border-radius: var(--radius-sm);
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 200;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    font-weight: 400;
+    font-style: normal;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.has-tooltip:hover::after { opacity: 1; }
+
+/* ===========================================
+   OVERALL BRIEF HERO
+   =========================================== */
+.overall-brief-card {
+    background: linear-gradient(135deg, rgba(20,32,52,0.9) 0%, rgba(14,22,36,0.9) 100%);
+    border: 1px solid var(--border-active);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease forwards;
+}
+.overall-brief-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--brand), #9f7aea, var(--bullish));
+}
+.overall-brief-meta {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.overall-tag {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--brand); background: var(--brand-dim); border: 1px solid var(--border-active);
+    padding: 0.2rem 0.6rem; border-radius: 20px;
+}
+.overall-brief-headline {
+    font-size: 1.1rem; font-weight: 700; line-height: 1.5;
+    color: var(--text-1); margin-bottom: 1rem;
+}
+.overall-brief-body {
+    font-size: 0.88rem; line-height: 1.8; color: var(--text-2);
+}
+.overall-brief-body p { margin-bottom: 0.6rem; }
+.overall-brief-footer {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    margin-top: 1.25rem; padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+.overall-loading {
+    display: flex; align-items: center; gap: 0.75rem;
+    color: var(--text-2); font-size: 0.9rem; padding: 1.5rem 0;
+}
+.overall-loading .spinner { border-color: rgba(255,255,255,0.2); border-top-color: var(--brand); width: 20px; height: 20px; }
+
+/* ===========================================
+   SPARKLINE
+   =========================================== */
+.sparkline-cell { line-height: 0; vertical-align: middle; }
+.sparkline-svg { display: block; overflow: visible; }
+.sparkline-line { fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.sparkline-pos { stroke: var(--bullish); }
+.sparkline-neg { stroke: var(--bearish); }
+
+/* ===========================================
+   ACTIONABLE ITEMS
+   =========================================== */
+.actions-panel {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+.actions-panel h3 { font-size: 0.85rem; color: var(--text-2); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.8px; }
+.action-items-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.action-item {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    padding: 0.75rem 1rem;
+    background: var(--surface-3);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid transparent;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    transition: background var(--transition);
+}
+.action-item:hover { background: rgba(255,255,255,0.04); }
+.action-item.warning { border-left-color: var(--act-review); }
+.action-item.danger  { border-left-color: var(--act-act); }
+.action-item.info    { border-left-color: var(--brand); }
+.action-item.success { border-left-color: var(--bullish); }
+.action-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+.action-text { flex: 1; color: var(--text-1); }
+.action-text strong { color: var(--text-1); }
+.action-text .sub { color: var(--text-2); font-size: 0.8rem; display: block; margin-top: 0.2rem; }
+
+/* ===========================================
    ANALYTICS
    =========================================== */
 .analytics-grid {
@@ -566,7 +692,7 @@ select option { background: #10151e; }
 
 /* Responsive sidebar hide */
 @media (max-width: 680px) {
-    body { overflow: auto; }
+    body { overflow: hidden; }
     .layout { width: 100%; }
     .sidebar {
         position: fixed; left: 0; top: 0; bottom: 0;
