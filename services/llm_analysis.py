@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from openai import OpenAI
 
 
@@ -28,25 +29,37 @@ def _parse_json(raw: str) -> dict:
 # ---------------------------------------------------------------------------
 # Per-ticker analysis
 # ---------------------------------------------------------------------------
-def analyze_news_batch(holdings: list[dict], news_batch: list[dict], profile: dict) -> list[dict]:
+def analyze_news_batch(holdings: list[dict], news_batch: list[dict],
+                       profile: dict, macro_news: list[dict] = None) -> list[dict]:
     api_key = os.getenv("FEATHERLESS_API_KEY")
     if not api_key or api_key == "replace_with_your_featherless_key":
         return mock_fallback(holdings)
 
     client, model = _get_client()
+    macro_news = macro_news or []
 
     # Group news by ticker
     news_by_ticker: dict[str, list[str]] = {}
     for item in news_batch:
-        t = item["ticker"]
+        t = item.get("ticker")
+        if not t:
+            continue
         news_by_ticker.setdefault(t, [])
         title = item.get("title") or ""
         desc  = item.get("description") or ""
         if title:
             news_by_ticker[t].append(f"• {title}. {desc}".strip())
 
-    risk     = profile.get("risk_tolerance", "Moderate")
-    horizon  = profile.get("investment_horizon", "Long-term")
+    risk    = profile.get("risk_tolerance", "Moderate")
+    horizon = profile.get("investment_horizon", "Long-term")
+
+    # ------------------------------------------------------------------
+    # Step 1: Identify cross-cutting shared themes from ALL news
+    # (these go in the overall brief; per-ticker cards should NOT repeat)
+    # ------------------------------------------------------------------
+    all_headlines = [item.get("title", "") for item in news_batch if item.get("title")]
+    macro_headlines = [f"[MACRO] {m.get('title','')}" for m in macro_news if m.get("title")]
+    shared_themes = _extract_shared_themes(client, model, all_headlines + macro_headlines)
 
     results = []
 
@@ -57,6 +70,18 @@ def analyze_news_batch(holdings: list[dict], news_batch: list[dict], profile: di
         articles   = news_by_ticker.get(ticker, [])
 
         if not articles:
+            results.append({
+                "ticker": ticker,
+                "headline": f"No significant news found for {ticker} in the last 7 days.",
+                "bullets": ["Market news sources showed no major updates."],
+                "sentiment": "Neutral",
+                "impact": "Low",
+                "key_drivers": ["No current news drivers"],
+                "position_insight": f"No new catalysts detected in recent hours. Continue holding according to your original investment thesis for {ticker}.",
+                "action_signal": "Monitor",
+                "qty": qty,
+                "cost_basis": cost_basis
+            })
             continue
 
         articles_text = "\n".join(articles[:6])
@@ -67,34 +92,55 @@ def analyze_news_batch(holdings: list[dict], news_batch: list[dict], profile: di
         elif qty:
             position_ctx = f"Position: {qty} units (no cost basis provided)."
 
-        prompt = f"""You are Heimdall, a sharp institutional-grade financial analyst. Be specific, data-driven, and insightful — no generic platitudes.
+        shared_ctx = ""
+        if shared_themes:
+            shared_ctx = (
+                "\nSHARED THEMES (already covered in the portfolio overview — DO NOT repeat these):\n"
+                + "\n".join(f"- {t}" for t in shared_themes)
+                + "\n\nFocus ONLY on what is SPECIFIC and UNIQUE to this ticker."
+            )
+
+        source_filter = (
+            "\nSOURCE FILTER: Analyst upgrades/downgrades from investment banks (e.g. Wedbush, Goldman, JPM price targets) "
+            "are low-information. Do NOT lead with or over-weight them. "
+            "Prioritise in this order: (1) government/regulatory actions, (2) Fed/central bank statements, "
+            "(3) earnings/revenue data, (4) product launches or M&A, (5) macro events (CPI, tariffs, geopolitics). "
+            "Only mention analyst calls if no higher-priority news exists."
+        )
+
+        prompt = f"""You are Heimdall, a sharp institutional-grade financial analyst. Today's date is {datetime.utcnow().strftime('%Y-%m-%d')}. Do not hallucinate upcoming events like earnings if they are not specifically mentioned in the news or if you are not certain of the timeline relative to today's date.
 
 USER CONTEXT:
 - Ticker: {ticker}
 - {position_ctx}
 - Risk tolerance: {risk} | Investment horizon: {horizon}
+{source_filter}
+{shared_ctx}
 
-RECENT NEWS:
+RECENT COMPANY-SPECIFIC NEWS:
 {articles_text}
 
-TASK: Analyze the above news and produce a precise, actionable assessment. Be specific about:
-1. What EXACTLY changed or happened (prices, percentages, product names, competitors, macro data)
-2. The MECHANISM of impact (e.g. "higher rates compress growth multiples", "supply glut pressures margins", "beats consensus by X%")
-3. What this means for THIS specific position — considering the entry price vs current environment
+TASK: Produce a precise, company-specific assessment. Be specific about:
+1. What EXACTLY changed (earnings beats/misses with %, regulatory actions, product specifics, named executives)
+2. The MECHANISM of impact on this stock's price or fundamentals
+3. What this means for THIS position at this cost basis / horizon
 
-OUTPUT: Respond ONLY with a valid raw JSON object. No markdown. No preamble. Exactly this structure:
+Do NOT cover general AI trends, macro rates, or sector themes that affect all tech stocks equally — those belong in the portfolio overview.
+Do NOT echo back or mention the user's risk tolerance or investment horizon — that is already known. Write as if speaking to an informed peer.
+
+Respond ONLY with a valid raw JSON object. No markdown. No preamble:
 {{
   "ticker": "{ticker}",
-  "headline": "One punchy sentence with a specific fact or figure from the news.",
+  "headline": "One punchy sentence with a company-specific fact or figure.",
   "bullets": [
-    "Specific development 1 with concrete detail (% move, dollar figure, comparison)",
-    "Specific development 2",
-    "Key risk or tailwind to watch"
+    "Company-specific development 1 with concrete numbers",
+    "Company-specific development 2",
+    "Key company-specific risk or catalyst to watch"
   ],
   "sentiment": "Bullish" or "Bearish" or "Neutral",
   "impact": "High" or "Medium" or "Low",
-  "key_drivers": ["driver with specifics", "driver 2"],
-  "position_insight": "2 sentences max. Explain the specific mechanism: what happened → why it matters → concrete implication for this position at this cost basis / timeframe. Name actual numbers, ratios, or catalysts.",
+  "key_drivers": ["specific driver 1", "specific driver 2"],
+  "position_insight": "2 sentences. State the impact directly. Name the specific mechanism (e.g. margin compression, multiple expansion, revenue beat). Do not mention the user's risk profile or time horizon.",
   "action_signal": "Monitor" or "Review" or "Act"
 }}"""
 
@@ -102,7 +148,7 @@ OUTPUT: Respond ONLY with a valid raw JSON object. No markdown. No preamble. Exa
             response = client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "You are a financial analyst. Output ONLY raw JSON, no markdown, no explanations."},
+                    {"role": "system", "content": "You are a financial analyst. Output ONLY raw JSON, no markdown."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.15,
@@ -121,67 +167,121 @@ OUTPUT: Respond ONLY with a valid raw JSON object. No markdown. No preamble. Exa
     return results
 
 
+def _extract_shared_themes(client, model, headlines: list[str]) -> list[str]:
+    """Use LLM to identify broad cross-cutting themes across all news."""
+    if not headlines:
+        return []
+    joined = "\n".join(headlines[:20])
+    prompt = f"""From the following news headlines, identify 3-5 broad cross-cutting themes that affect MULTIPLE companies (e.g. 'AI capex spending by hyperscalers', 'US tariff escalation', 'Federal Reserve rate expectations'). Do NOT list company-specific events.
+
+Headlines:
+{joined}
+
+Return ONLY a JSON array of short theme strings, e.g. ["AI infrastructure spending", "Fed rate uncertainty"].
+Return [] if no clear shared themes exist."""
+    try:
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+            max_tokens=120,
+        )
+        raw = resp.choices[0].message.content.strip()
+        start = raw.find("[")
+        end   = raw.rfind("]") + 1
+        if start >= 0 and end > start:
+            return json.loads(raw[start:end])
+    except Exception as e:
+        print(f"Shared theme extraction error: {e}")
+    return []
+
+
+
 # ---------------------------------------------------------------------------
 # Portfolio-wide overall brief
 # ---------------------------------------------------------------------------
 def generate_overall_brief(holdings: list[dict], news_batch: list[dict],
-                            analytics: dict, profile: dict) -> dict:
+                            analytics: dict, profile: dict,
+                            macro_news: list[dict] = None) -> dict:
     api_key = os.getenv("FEATHERLESS_API_KEY")
     if not api_key or api_key == "replace_with_your_featherless_key":
         return mock_overall(holdings, analytics)
 
     client, model = _get_client()
+    macro_news = macro_news or []
 
     tickers = [h["ticker"] for h in holdings]
     risk    = profile.get("risk_tolerance", "Moderate")
     horizon = profile.get("investment_horizon", "Long-term")
     name    = profile.get("name") or "Investor"
 
-    # Flatten top news per ticker
-    news_lines = []
+    # Flatten top company-specific news per ticker (deduplicated)
+    ticker_lines = []
     seen = set()
     for item in news_batch:
         key = item.get("title", "")[:60]
-        if key not in seen:
+        if key and key not in seen:
             seen.add(key)
-            news_lines.append(f"[{item['ticker']}] {item.get('title','')}. {item.get('description','')[:100]}")
+            ticker_lines.append(f"[{item['ticker']}] {item.get('title','')}. {item.get('description','')[:120]}")
+
+    # Macro news context (the part that was missing)
+    macro_lines = []
+    macro_seen = set()
+    for m in macro_news:
+        key = m.get("title", "")[:60]
+        if key and key not in macro_seen:
+            macro_seen.add(key)
+            macro_lines.append(f"[MACRO] {m.get('title','')}. {m.get('description','')[:120]}")
 
     # Analytics context
-    m   = analytics.get("portfolio_metrics", {})
-    div = analytics.get("diversification", {})
+    port_m  = analytics.get("portfolio_metrics", {})
+    div     = analytics.get("diversification", {})
     metrics_ctx = ""
-    if m.get("sharpe_ratio") is not None:
-        metrics_ctx = f"Portfolio Sharpe: {m['sharpe_ratio']}, Annualised vol: {m.get('annual_volatility_pct','?')}%, est. annual return: {m.get('annual_return_pct','?')}%. Diversification: {div.get('label','?')} (score {div.get('score','?')}/100)."
+    if port_m.get("sharpe_ratio") is not None:
+        metrics_ctx = (
+            f"Portfolio Sharpe: {port_m['sharpe_ratio']}, "
+            f"Annualised vol: {port_m.get('annual_volatility_pct','?')}%, "
+            f"est. annual return: {port_m.get('annual_return_pct','?')}%. "
+            f"Diversification: {div.get('label','?')} (score {div.get('score','?')}/100)."
+        )
 
     flags = div.get("flags", [])
     flags_ctx = " | ".join(flags) if flags else "No major concentration warnings."
 
-    news_text = "\n".join(news_lines[:15])
+    news_text  = "\n".join(ticker_lines[:12])
+    macro_text = "\n".join(macro_lines[:10])
 
-    prompt = f"""You are Heimdall, an AI financial advisor writing a morning brief for {name}.
+    prompt = f"""You are Heimdall, writing a comprehensive, insightful morning portfolio brief for {name}. Today's date is {datetime.utcnow().strftime('%Y-%m-%d')}.
 
 PORTFOLIO: {', '.join(tickers)}
 RISK PROFILE: {risk} | Horizon: {horizon}
 {metrics_ctx}
 PORTFOLIO FLAGS: {flags_ctx}
 
-LATEST NEWS ACROSS PORTFOLIO:
-{news_text}
+MACROECONOMIC & GEOPOLITICAL NEWS (highest priority — always cover what's relevant):
+{macro_text if macro_text else "No significant macro news fetched."}
 
-Write a concise, insightful morning portfolio brief — like a note from a sharp hedge fund PM.
-Format:
-- Start with a 1-sentence BLUF (Bottom Line Up Front) about the portfolio outlook today.
-- 3-5 key points: each must reference a specific ticker or macro theme with concrete detail.
-- Close with 1-sentence on the biggest risk or opportunity to watch.
+COMPANY-SPECIFIC NEWS:
+{news_text if news_text else "No company news fetched."}
 
-Tone: Direct, professional, no fluff. No "it's important to..." or "consider monitoring..." — give actual analysis.
-Do not use bullet-point formatting — write in short readable paragraphs.
-Respond ONLY with raw JSON:
+SOURCE PRIORITY RULES:
+- Government actions (White House, Treasury, Congress) > Federal Reserve statements > Earnings/revenue data > Geopolitical events > Regulatory actions > Analyst/bank calls
+- Sell-side analyst upgrades/downgrades (Wedbush, Goldman, etc.) are low-information bias — only mention if nothing more important exists
+- Geopolitical events (wars, sanctions, tariffs) MUST be covered if they affect the portfolio
+
+Write a highly detailed, structured, newsletter-style morning portfolio brief. This should be a substantial read for the user over their morning coffee — DO NOT provide just a few sentences. Dive deep into the nuances.
+Each section MUST be comprised of rich, insightful paragraphs (at least 3-4 dense paragraphs per section) drawing directly from the news provided.
+Do not use bullet points anywhere. Write like a sharp fund manager's daily written macro memo.
+Do NOT mention obvious platitudes like "diversification is important" or restate their risk profile.
+
+Respond ONLY with raw JSON — no markdown, no preamble:
 {{
-  "bluf": "One punchy portfolio-wide takeaway sentence.",
-  "body": "3-5 paragraph morning note. Specific, named, data-driven.",
-  "portfolio_sentiment": "Bullish" or "Bearish" or "Mixed",
-  "watch_item": "The single most important thing to monitor today."
+  "bluf": "One punchy sentence: the single most important takeaway for the portfolio today.",
+  "macro_environment": "A comprehensive 3-4 paragraph deep dive on the macro and geopolitical backdrop. Discuss specific events (e.g. Iran conflict, Fed stance, inflation prints) and carefully explain their structural mechanisms of impact on markets.",
+  "portfolio_impact": "A comprehensive 3-4 paragraph detailed breakdown of how today's macro and company news specifically affects the holdings. Name tickers. Synthesize themes. Use numbers where possible.",
+  "key_risk": "One specific, data-driven sentence on the single biggest downside risk appearing in CURRENT news. DO NOT give generic platitudes like 'market shock' or 'volatility'. You MUST name a specific catalyst (e.g., 'escalation in the Iran conflict disrupting the Strait of Hormuz', 'a hotter-than-expected CPI print tomorrow').",
+  "opportunity": "One specific sentence on the best opportunity or positive catalyst mentioned in the news. Name the specific ticker or macro event (e.g., 'Alphabet's new TPU v5p chips competing with Nvidia', 'China's PPI return to growth signalling industrial demand').",
+  "portfolio_sentiment": "Bullish" or "Bearish" or "Mixed"
 }}"""
 
     try:
@@ -191,14 +291,15 @@ Respond ONLY with raw JSON:
                 {"role": "system", "content": "You are a financial analyst writing morning briefings. Output ONLY raw JSON."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.25,
-            max_tokens=600,
+            temperature=0.4,
+            max_tokens=1000,
         )
         parsed = _parse_json(response.choices[0].message.content)
         return parsed
     except Exception as e:
-        print(f"Overall brief error: {e}")
+        print(f"[FALLBACK] Overall brief LLM error: {e} — returning mock data")
         return mock_overall(holdings, analytics)
+
 
 
 # ---------------------------------------------------------------------------
@@ -377,9 +478,14 @@ def mock_fallback(holdings: list[dict]) -> list[dict]:
 
 def mock_overall(holdings, analytics):
     tickers = [h["ticker"] for h in holdings]
+    today = datetime.utcnow()
+    year  = today.year
+    month = today.strftime("%B")
     return {
-        "bluf": f"Your portfolio ({', '.join(tickers)}) is positioned in high-quality growth assets; today's setup is cautiously bullish pending macro catalysts.",
-        "body": "NVDA remains the highest-conviction position given the AI infrastructure supercycle showing no signs of demand softening. AAPL's China recovery removes the key bear overhang but Services growth is the real driver to watch.\n\nMarket-wide, rising yields are a technical headwind for growth multiples — watch the 10yr Treasury. Any print above 4.8% tends to trigger rotation from growth to value.\n\nNo major news events today, but CPI report is due this week — a hot print could reprice rate-cut expectations and compress Q4 tech valuations.",
-        "portfolio_sentiment": "Bullish",
-        "watch_item": "10yr Treasury yield direction and any Fed commentary ahead of this week's CPI release."
+        "bluf": f"[MOCK DATA — LLM unavailable] Portfolio is cautiously positioned as of {month} {year}; macro headwinds from rate uncertainty and geopolitical risk are the primary factors to watch.",
+        "macro_environment": f"NOTE: This is fallback mock data generated on {today.strftime('%Y-%m-%d')} because the live LLM analysis failed. Configure your FEATHERLESS_API_KEY for real-time analysis.",
+        "portfolio_impact": f"For a tech-heavy portfolio ({', '.join(tickers)}), elevated rates compress forward P/E multiples and geopolitical risk adds volatility. Check server logs for the LLM error.",
+        "key_risk": "LLM analysis unavailable — check FEATHERLESS_API_KEY and server logs.",
+        "opportunity": "Resolve LLM connectivity to get live analysis.",
+        "portfolio_sentiment": "Mixed",
     }

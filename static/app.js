@@ -6,7 +6,7 @@ const API = '';
 
 /* ---- State ---- */
 let holdings = [];
-let profile  = {};
+let profile = {};
 let activeTab = 'brief';
 let tabs = {}; // populated after DOM ready
 
@@ -17,24 +17,29 @@ const $ = id => document.getElementById(id);
    TOOLTIPS for financial terms
    ===================================================== */
 const TIPS = {
-    'Sharpe Ratio':           "Measures return per unit of risk. Above 1.0 = good, above 2.0 = excellent. Below 0 means you'd be better off in cash.",
-    'Annual Volatility':      'How much the portfolio swings year-to-year (std dev of daily returns x sqrt(252)). Higher = riskier.',
-    'Annual Return (est.)':   'Estimated annualised return based on last 1 year of price data. Past performance does not guarantee future results.',
-    'Portfolio Value':        'Sum of (current price x quantity) across all your holdings.',
-    'Diversification Score':  'A 0-100 score based on number of holdings, sector spread, and single-name concentration. Higher is safer.',
-    'P&L':                    'Profit & Loss: (current price - your avg cost) x quantity. Unrealised until you sell.',
-    'Weight':                 'What percentage of your total portfolio value this position makes up.',
+    'Sharpe Ratio': "Measures return per unit of risk. Above 1.0 = good, above 2.0 = excellent. Below 0 means you'd be better off in cash.",
+    'Annual Volatility': 'How much the portfolio swings year-to-year (std dev of daily returns x sqrt(252)). Higher = riskier.',
+    'Annual Return (est.)': 'Estimated annualised return based on last 1 year of price data. Past performance does not guarantee future results.',
+    'Portfolio Value': 'Sum of (current price x quantity) across all your holdings.',
+    'Diversification Score': 'A 0-100 score based on number of holdings, sector spread, and single-name concentration. Higher is safer.',
+    'P&L': 'Profit & Loss: (current price - your avg cost) x quantity. Unrealised until you sell.',
+    'Weight': 'What percentage of your total portfolio value this position makes up.',
+    'Beta': 'Sensitivity to S&P 500 moves. Beta 1.5 = stock typically moves 1.5x the market. Above 1 = amplified swings; below 1 = more defensive.',
+    'VaR (1-day, 95%)': 'Value at Risk: based on the last year of daily returns, there is a 95% chance your portfolio will not lose more than this percent in a single trading day.',
+    'VaR (1-month, 95%)': 'Monthly Value at Risk: estimated worst-case 1-month loss at 95% confidence, scaled from daily VaR.',
+    'P/E Ratio': 'Price-to-Earnings: how much you pay per dollar of earnings. "fwd" uses next-year analyst estimates; "ttm" uses the last 12 months.',
+    'P/S Ratio': 'Price-to-Sales: market cap divided by annual revenue. Useful for unprofitable or high-growth companies.',
+    'Portfolio Beta': 'Weighted-average beta of the portfolio. A portfolio beta of 1.3 means a 10% market drop would typically hurt the portfolio ~13%.',
 };
-
 
 /* =====================================================
    INIT
    ===================================================== */
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize tabs AFTER DOM is ready
-    tabs.brief     = { nav: $('nav-brief'),     panel: $('tab-brief') };
+    tabs.brief = { nav: $('nav-brief'), panel: $('tab-brief') };
     tabs.analytics = { nav: $('nav-analytics'), panel: $('tab-analytics') };
-    tabs.actions   = { nav: $('nav-actions'),   panel: $('tab-actions') };
+    tabs.actions = { nav: $('nav-actions'), panel: $('tab-actions') };
     tabs.portfolio = { nav: $('nav-portfolio'), panel: $('tab-portfolio') };
 
     $('current-date').textContent = new Date().toLocaleDateString('en-US', {
@@ -85,11 +90,11 @@ function setupSidebar() {
    ===================================================== */
 async function loadPortfolio() {
     try {
-        const res  = await fetch(`${API}/api/portfolio`);
+        const res = await fetch(`${API}/api/portfolio`);
         const data = await res.json();
         holdings = data.holdings || [];
         renderHoldingsTable();
-    } catch(e) { console.error('loadPortfolio', e); }
+    } catch (e) { console.error('loadPortfolio', e); }
 }
 
 async function savePortfolio() {
@@ -133,9 +138,9 @@ function setupPortfolioForm() {
         e.preventDefault();
         const ticker = $('ticker-input').value.trim().toUpperCase();
         if (!ticker) return;
-        const qty        = parseFloat($('qty-input').value)  || 0;
+        const qty = parseFloat($('qty-input').value) || 0;
         const cost_basis = parseFloat($('cost-input').value) || 0;
-        const existing   = holdings.find(h => h.ticker === ticker);
+        const existing = holdings.find(h => h.ticker === ticker);
         if (existing) { existing.qty = qty || existing.qty; existing.cost_basis = cost_basis || existing.cost_basis; }
         else holdings.push({ ticker, qty, cost_basis });
         $('ticker-input').value = $('qty-input').value = $('cost-input').value = '';
@@ -148,14 +153,14 @@ function setupPortfolioForm() {
    CSV IMPORT
    ===================================================== */
 function setupCSV() {
-    const zone   = $('csv-drop-zone');
-    const input  = $('csv-file-input');
+    const zone = $('csv-drop-zone');
+    const input = $('csv-file-input');
     const status = $('csv-status');
 
     $('csv-browse-btn').addEventListener('click', () => input.click());
     zone.addEventListener('click', () => input.click());
     input.addEventListener('change', () => { if (input.files[0]) uploadCSV(input.files[0]); });
-    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
     zone.addEventListener('drop', e => {
         e.preventDefault(); zone.classList.remove('drag-over');
@@ -166,16 +171,16 @@ function setupCSV() {
         const form = new FormData();
         form.append('file', file);
         try {
-            const res  = await fetch(`${API}/api/portfolio/csv`, { method: 'POST', body: form });
+            const res = await fetch(`${API}/api/portfolio/csv`, { method: 'POST', body: form });
             const data = await res.json();
             if (res.ok) { holdings = data.holdings || []; renderHoldingsTable(); showCSVStatus(`✓ Imported ${data.count} holdings`, 'ok'); }
             else showCSVStatus(`✗ ${data.detail || 'Import failed'}`, 'err');
-        } catch(e) { showCSVStatus('✗ Network error', 'err'); }
+        } catch (e) { showCSVStatus('✗ Network error', 'err'); }
     }
 
     function showCSVStatus(msg, type) {
         status.textContent = msg;
-        status.className   = `csv-status ${type}`;
+        status.className = `csv-status ${type}`;
         status.classList.remove('hidden');
         setTimeout(() => status.classList.add('hidden'), 4000);
     }
@@ -186,7 +191,7 @@ function setupCSV() {
    ===================================================== */
 async function loadProfile() {
     try { const res = await fetch(`${API}/api/profile`); profile = await res.json(); applyProfileToUI(); }
-    catch(e) { console.error('loadProfile', e); }
+    catch (e) { console.error('loadProfile', e); }
 }
 
 function applyProfileToUI() {
@@ -209,7 +214,7 @@ function setupProfile() {
     document.querySelectorAll('.chip').forEach(chip => chip.addEventListener('click', () => chip.classList.toggle('active')));
     $('profile-form').addEventListener('submit', async e => {
         e.preventDefault();
-        const focus   = [...document.querySelectorAll('.chip.active')].map(c => c.dataset.val);
+        const focus = [...document.querySelectorAll('.chip.active')].map(c => c.dataset.val);
         const payload = { name: $('profile-name').value.trim(), risk_tolerance: $('profile-risk').value, investment_horizon: $('profile-horizon').value, focus };
         await fetch(`${API}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         profile = payload;
@@ -226,10 +231,10 @@ function setupBrief() {
 }
 
 async function generateBrief() {
-    const btn     = $('generate-btn');
+    const btn = $('generate-btn');
     const spinner = $('brief-spinner');
     const btnText = btn.querySelector('.btn-text');
-    const cont    = $('brief-container');
+    const cont = $('brief-container');
     const overallWrap = $('overall-brief-wrap');
 
     if (!holdings.length) { alert('Add holdings in the Portfolio tab first.'); switchTab('portfolio'); return; }
@@ -268,7 +273,7 @@ async function generateBrief() {
         } else {
             briefs.forEach((item, idx) => cont.appendChild(buildBriefCard(item, idx)));
         }
-    } catch(e) {
+    } catch (e) {
         console.error(e);
         cont.innerHTML = `<div class="empty-state"><p style="color:var(--bearish)">Error generating brief. Check server logs.</p></div>`;
     } finally {
@@ -281,7 +286,43 @@ async function generateBrief() {
 function buildOverallBriefCard(data) {
     const sentClass = (data.portfolio_sentiment || 'Mixed').toLowerCase();
     const sentLabel = data.portfolio_sentiment || 'Mixed';
-    const bodyParas = (data.body || '').split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+
+    // Build article sections from new structured schema
+    const sections = [];
+
+    if (data.macro_environment) {
+        sections.push(`
+            <div class="brief-article-section">
+                <div class="brief-article-label">🌍 Macro &amp; Geopolitics</div>
+                <p class="brief-article-body">${data.macro_environment}</p>
+            </div>`);
+    }
+
+    if (data.portfolio_impact) {
+        sections.push(`
+            <div class="brief-article-section">
+                <div class="brief-article-label">💼 Portfolio Impact</div>
+                <p class="brief-article-body">${data.portfolio_impact}</p>
+            </div>`);
+    }
+
+    const riskOpp = [];
+    if (data.key_risk) {
+        riskOpp.push(`<div class="brief-risk-item danger"><em>Risk:</em> ${data.key_risk}</div>`);
+    }
+    if (data.opportunity) {
+        riskOpp.push(`<div class="brief-risk-item success"><em>Opportunity:</em> ${data.opportunity}</div>`);
+    }
+    if (riskOpp.length) {
+        sections.push(`<div class="brief-article-section">${riskOpp.join('')}</div>`);
+    }
+
+    // Fallback to old 'body' field if new schema not present
+    if (!sections.length && data.body) {
+        const bodyParas = data.body.split('\n').filter(Boolean).map(p => `<p class="brief-article-body">${p}</p>`).join('');
+        sections.push(`<div class="brief-article-section">${bodyParas}</div>`);
+    }
+
     return `
     <div class="overall-brief-card">
         <div class="overall-brief-meta">
@@ -289,22 +330,22 @@ function buildOverallBriefCard(data) {
             <span class="badge ${sentClass === 'mixed' ? 'neutral' : sentClass}">${sentLabel}</span>
         </div>
         <div class="overall-brief-headline">${data.bluf || ''}</div>
-        <div class="overall-brief-body">${bodyParas}</div>
-        ${data.watch_item ? `<div class="overall-brief-footer"><span style="font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-3)">Watch today:</span><span style="font-size:.85rem;color:var(--act-review)">👁 ${data.watch_item}</span></div>` : ''}
+        <div class="overall-brief-sections">${sections.join('')}</div>
     </div>`;
 }
 
+
 function buildBriefCard(item, idx) {
-    const card      = document.createElement('div');
-    card.className  = 'brief-card';
+    const card = document.createElement('div');
+    card.className = 'brief-card';
     card.style.animationDelay = `${idx * 0.08}s`;
 
     const sentiment = (item.sentiment || 'Neutral').toLowerCase();
-    const impact    = (item.impact    || 'Low').toLowerCase();
-    const signal    = (item.action_signal || 'Monitor').toLowerCase();
+    const impact = (item.impact || 'Low').toLowerCase();
+    const signal = (item.action_signal || 'Monitor').toLowerCase();
 
-    const bullets  = (item.bullets || []).map(b => `<li>${b}</li>`).join('');
-    const drivers  = (item.key_drivers || []).map(d => `<span class="driver-chip">${d}</span>`).join('');
+    const bullets = (item.bullets || []).map(b => `<li>${b}</li>`).join('');
+    const drivers = (item.key_drivers || []).map(d => `<span class="driver-chip">${d}</span>`).join('');
     const posBlock = (item.qty || item.cost_basis)
         ? `<div class="position-meta">Position: <span>${item.qty ?? '—'} units</span> @ <span>$${item.cost_basis ? Number(item.cost_basis).toFixed(2) : '—'}</span></div>` : '';
 
@@ -343,10 +384,10 @@ function setupAnalytics() {
 }
 
 async function loadAnalytics() {
-    const btn     = $('refresh-analytics-btn');
+    const btn = $('refresh-analytics-btn');
     const spinner = $('analytics-spinner');
     const btnText = btn.querySelector('.btn-text');
-    const cont    = $('analytics-container');
+    const cont = $('analytics-container');
 
     if (!holdings.length) { alert('Add holdings first.'); switchTab('portfolio'); return; }
     btnText.textContent = 'Loading…';
@@ -355,14 +396,14 @@ async function loadAnalytics() {
     cont.innerHTML = '<div class="empty-state"><div class="empty-glow"></div><p>Fetching market data…</p></div>';
 
     try {
-        const res  = await fetch(`${API}/api/analytics`);
+        const res = await fetch(`${API}/api/analytics`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         renderAnalytics(data, cont);
-    } catch(e) {
+    } catch (e) {
         cont.innerHTML = `<div class="empty-state"><p style="color:var(--bearish)">Analytics failed: ${e.message}</p></div>`;
     } finally {
-        btnText.textContent = '↻ Refresh Analytics';
+        btnText.textContent = 'Refresh Analytics';
         spinner.classList.add('hidden');
         btn.disabled = false;
     }
@@ -371,127 +412,487 @@ async function loadAnalytics() {
 /* ---- Sparkline helper ---- */
 function buildSparkline(prices, width = 64, height = 28) {
     if (!prices || prices.length < 2) return '<span style="color:var(--text-3);font-size:.75rem">—</span>';
-    const min  = Math.min(...prices);
-    const max  = Math.max(...prices);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
     const range = max - min || 1;
     const isPos = prices[prices.length - 1] >= prices[0];
-    const pts   = prices.map((p, i) => {
+    const pts = prices.map((p, i) => {
         const x = (i / (prices.length - 1)) * width;
         const y = height - ((p - min) / range) * height;
         return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
-    const cls   = isPos ? 'sparkline-pos' : 'sparkline-neg';
+    const cls = isPos ? 'sparkline-pos' : 'sparkline-neg';
     return `<svg class="sparkline-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
         <polyline class="sparkline-line ${cls}" points="${pts}"/>
     </svg>`;
 }
 
+/* ---- Benchmark comparison chart ---- */
+function buildBenchmarkChart(bmark) {
+    if (!bmark || !bmark.dates || bmark.dates.length < 2) return '';
+    const port = bmark.portfolio_cumulative;
+    const spy = bmark.spy_cumulative;
+    const allV = [...port, ...spy];
+    const minV = Math.min(...allV), maxV = Math.max(...allV);
+    const range = (maxV - minV) || 1;
+    const W = 560, H = 140;
+    const pad = { t: 12, b: 20, l: 44, r: 10 };
+    const cw = W - pad.l - pad.r;
+    const ch = H - pad.t - pad.b;
+    const xs = i => ((i / (port.length - 1)) * cw).toFixed(1);
+    const ys = v => (ch - ((v - minV) / range) * ch).toFixed(1);
+
+    const pPts = port.map((v, i) => `${xs(i)},${ys(v)}`).join(' ');
+    const sPts = spy.map((v, i) => `${xs(i)},${ys(v)}`).join(' ');
+
+    // Y-axis ticks
+    const ticks = 4;
+    const yLabels = Array.from({ length: ticks + 1 }, (_, k) => {
+        const v = minV + (range * k / ticks);
+        const y = ys(v);
+        return `<text class="ch-axis-lbl" x="-6" y="${y}" text-anchor="end" dominant-baseline="middle">${v >= 0 ? '+' : ''}${v.toFixed(1)}%</text>`;
+    }).join('');
+
+    const zeroY = ys(0);
+    const alphaClass = bmark.alpha >= 0 ? 'pos' : 'neg';
+    const alphaSign = bmark.alpha >= 0 ? '+' : '';
+    const portSign = bmark.portfolio_total_return_pct >= 0 ? '+' : '';
+    const spySign = bmark.spy_total_return_pct >= 0 ? '+' : '';
+    const portRet = bmark.portfolio_total_return_pct;
+    const spyRet = bmark.spy_total_return_pct;
+
+    return `
+    <div class="analytics-card">
+        <div class="bench-header">
+            <h3>Performance vs S&P 500 (1yr)</h3>
+            <div class="bench-returns">
+                <span class="bench-tag" style="background:var(--brand-dim);border-color:var(--brand)"><span class="bench-dot" style="background:var(--brand)"></span>Portfolio: <strong class="${portRet >= 0 ? 'pos' : 'neg'}">${portSign}${portRet}%</strong></span>
+                <span class="bench-tag"><span class="bench-dot" style="background:var(--text-3)"></span>SPY: <strong>${spySign}${spyRet}%</strong></span>
+                <span class="bench-tag" style="background:var(--brand-dim);border-color:var(--border-active)">Alpha: <strong class="${alphaClass}">${alphaSign}${bmark.alpha}%</strong></span>
+            </div>
+        </div>
+        <svg class="bench-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+            <g transform="translate(${pad.l},${pad.t})">
+                <line x1="0" y1="${zeroY}" x2="${cw}" y2="${zeroY}" class="ch-zero-line"/>
+                ${yLabels}
+                <polyline class="ch-line-spy" points="${sPts}"/>
+                <polyline class="ch-line-port" points="${pPts}"/>
+            </g>
+        </svg>
+    </div>`;
+}
+
+
+/* ---- Correlation cluster map (force-directed) ---- */
+function buildCorrWeb(corrData) {
+    if (!corrData || !corrData.tickers || corrData.tickers.length < 2) return '';
+    return `
+    <div class="analytics-card">
+        <h3>Correlation Cluster Map</h3>
+        <p class="corr-desc">Holdings are pulled together by correlation strength &mdash; <span style="color:var(--text-1)">clustered = move together</span>, distant = uncorrelated. <span style="color:var(--text-3)">Dark edges = inverse</span>. Watch the physics settle.</p>
+        <div style="display:flex;justify-content:center">
+            <canvas id="corr-canvas" width="460" height="390" class="corr-canvas"></canvas>
+        </div>
+        <p id="corr-note" class="corr-desc" style="margin-top:.4rem;text-align:center"></p>
+    </div>`;
+}
+
+function initCorrSim(corrData) {
+    const canvas = document.getElementById('corr-canvas');
+    if (!canvas || !corrData) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const { tickers, matrix } = corrData;
+    const n = tickers.length;
+    const NR = Math.max(16, Math.min(26, 200 / n));
+
+    // Seed nodes near center with a tiny random spread so forces can act
+    const nodes = tickers.map(t => ({
+        t,
+        x: W / 2 + (Math.random() - 0.5) * 60,
+        y: H / 2 + (Math.random() - 0.5) * 60,
+        vx: 0, vy: 0
+    }));
+
+    const K_REPEL = 10000;          // point repulsion constant
+    const K_SPRING = 0.01;         // spring stiffness
+    const DAMPING = 0.80;          // velocity decay per tick
+    const BASE_DIST = Math.min(W, H) * 0.50;  // ideal distance for corr=0
+    let iter = 0;
+    let rafId = null;
+    let draggedNode = null;
+
+    function step() {
+        const fx = new Float64Array(n);
+        const fy = new Float64Array(n);
+
+        for (let i = 0; i < n; i++) {
+            for (let j = i + 1; j < n; j++) {
+                const dx = nodes[j].x - nodes[i].x;
+                const dy = nodes[j].y - nodes[i].y;
+                const d = Math.sqrt(dx * dx + dy * dy) || 0.1;
+                const nx = dx / d, ny = dy / d;
+
+                // Repulsion between every pair — use safeD to prevent explosion at d≈0
+                const safeD = Math.max(10, d);
+                const frep = K_REPEL / (safeD * safeD);
+                fx[i] -= frep * nx; fy[i] -= frep * ny;
+                fx[j] += frep * nx; fy[j] += frep * ny;
+
+                // Spring: resting length = BASE_DIST * (1 - corr)
+                //   corr= 1 → rest=0   (collapse together)
+                //   corr= 0 → rest=BASE (neutral)
+                //   corr=-1 → rest=2×BASE (extra repulsion)
+                const corr = matrix[i][j];
+                const ideal = BASE_DIST * (1 - corr);
+                const fsp = K_SPRING * (d - ideal);
+                fx[i] += fsp * nx; fy[i] += fsp * ny;
+                fx[j] -= fsp * nx; fy[j] -= fsp * ny;
+            }
+
+            // Soft boundary walls
+            const m = NR + 10;
+            if (nodes[i].x < m) fx[i] += (m - nodes[i].x) * 0.55;
+            if (nodes[i].x > W - m) fx[i] -= (nodes[i].x - (W - m)) * 0.55;
+            if (nodes[i].y < m) fy[i] += (m - nodes[i].y) * 0.55;
+            if (nodes[i].y > H - m) fy[i] -= (nodes[i].y - (H - m)) * 0.55;
+
+            // Very weak gravity toward center
+            fx[i] += (W / 2 - nodes[i].x) * 0.003;
+            fy[i] += (H / 2 - nodes[i].y) * 0.003;
+        }
+
+        for (let i = 0; i < n; i++) {
+            if (nodes[i] === draggedNode) continue;
+
+            // Safety clamp to prevent physics explosion from edge cases
+            const clampF = 50;
+            const safeFx = Math.max(-clampF, Math.min(clampF, fx[i]));
+            const safeFy = Math.max(-clampF, Math.min(clampF, fy[i]));
+
+            nodes[i].vx = (nodes[i].vx + safeFx) * DAMPING;
+            nodes[i].vy = (nodes[i].vy + safeFy) * DAMPING;
+            nodes[i].x = Math.max(NR, Math.min(W - NR, nodes[i].x + nodes[i].vx));
+            nodes[i].y = Math.max(NR, Math.min(H - NR, nodes[i].y + nodes[i].vy));
+        }
+        iter++;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Edges
+        for (let i = 0; i < n; i++) {
+            for (let j = i + 1; j < n; j++) {
+                const corr = matrix[i][j];
+                if (Math.abs(corr) < 0.25) continue;
+                const alpha = Math.min(0.92, 0.15 + Math.abs(corr) * 0.77);
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.strokeStyle = corr > 0 ? `rgba(255,255,255,${alpha})` : `rgba(100,100,100,${alpha})`;
+                ctx.lineWidth = Math.max(1, Math.abs(corr) * 5);
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+        }
+
+        // Nodes
+        for (const { x, y, t } of nodes) {
+            // Glow halo
+            const grd = ctx.createRadialGradient(x, y, NR * 0.15, x, y, NR * 1.8);
+            grd.addColorStop(0, 'rgba(255,255,255,0.15)');
+            grd.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.beginPath();
+            ctx.arc(x, y, NR * 1.8, 0, Math.PI * 2);
+            ctx.fillStyle = grd;
+            ctx.fill();
+
+            // Circle
+            ctx.beginPath();
+            ctx.arc(x, y, NR, 0, Math.PI * 2);
+            ctx.fillStyle   = '#0a0a0a';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth   = 1.5;
+            ctx.stroke();
+
+            // Label
+            const fs = Math.max(8, Math.min(11, 130 / n));
+            ctx.font         = `700 ${fs}px Inter,system-ui,sans-serif`;
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle    = '#ffffff';
+            ctx.fillText(t, x, y);
+        }
+    }
+
+    // Annotate most-correlated pair
+    let maxC = 0, maxPair = '';
+    for (let i = 0; i < n; i++)
+        for (let j = i + 1; j < n; j++)
+            if (matrix[i][j] > maxC) { maxC = matrix[i][j]; maxPair = `${tickers[i]} & ${tickers[j]}`; }
+    if (maxC > 0.3) {
+        const note = document.getElementById('corr-note');
+        if (note) note.textContent = `Most correlated pair: ${maxPair} (r = ${maxC.toFixed(2)})`;
+    }
+
+    // Dragging interactions
+    canvas.style.touchAction = 'none';
+
+    canvas.addEventListener('pointerdown', e => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        draggedNode = nodes.find(nd => {
+            const dx = nd.x - mx, dy = nd.y - my;
+            return dx * dx + dy * dy < (NR + 8) * (NR + 8);
+        });
+        if (draggedNode) {
+            draggedNode.vx = 0; draggedNode.vy = 0;
+            iter = 0;
+            canvas.style.cursor = 'grabbing';
+            if (!rafId) tick();
+        }
+    });
+
+    canvas.addEventListener('pointermove', e => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        if (draggedNode) {
+            draggedNode.x = mx;
+            draggedNode.y = my;
+            draggedNode.vx = 0; draggedNode.vy = 0;
+            iter = 0;
+            if (!rafId) tick();
+        } else {
+            const hovered = nodes.some(nd => {
+                const dx = nd.x - mx, dy = nd.y - my;
+                return dx * dx + dy * dy < (NR + 5) * (NR + 5);
+            });
+            canvas.style.cursor = hovered ? 'grab' : 'default';
+        }
+    });
+
+    const endDrag = () => {
+        if (draggedNode) {
+            draggedNode = null;
+            canvas.style.cursor = 'default';
+        }
+    };
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointerleave', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+
+    function tick() {
+        if (iter < 220 || draggedNode) step();
+        draw();
+        if (iter < 290 || draggedNode) {
+            rafId = requestAnimationFrame(tick);
+        } else {
+            rafId = null;
+        }
+    }
+    tick();
+}
+
+
+
+/* ---- 52-week range bar ---- */
+function build52wBar(h) {
+    if (h.week_52_pct == null) return '<span style="color:var(--text-3)">—</span>';
+    const pct = Math.max(0, Math.min(100, h.week_52_pct));
+    return `<div class="w52-wrap" title="52w Low: $${h.week_52_low}  |  52w High: $${h.week_52_high}">
+        <div class="w52-track"><div class="w52-dot" style="left:${pct}%"></div></div>
+        <div class="w52-labels"><span>$${h.week_52_low}</span><span>$${h.week_52_high}</span></div>
+    </div>`;
+}
+
+/* ---- Stress test ---- */
+function buildStressTest(scenarios, portfolioBeta) {
+    if (!scenarios || !scenarios.length) return '';
+    const cards = scenarios.map(s => `
+        <div class="stress-card">
+            <div class="stress-scenario">${s.label}</div>
+            <div class="stress-pct neg">${s.est_portfolio_pct}%</div>
+            <div class="stress-dollar neg">≈ -$${Math.abs(s.est_dollar_impact).toLocaleString()}</div>
+        </div>`).join('');
+
+    return `
+    <div class="analytics-card">
+        <h3 class="has-tooltip" data-tip="${TIPS['Portfolio Beta']}">Stress Test &mdash; Market Downturn Scenarios</h3>
+        <p class="corr-desc">Estimated portfolio impact based on portfolio Beta of <strong>${portfolioBeta ?? '?'}</strong>. These are linear estimates; actual losses depend on correlations and market dynamics at the time.</p>
+        <div class="stress-grid">${cards}</div>
+    </div>`;
+}
+
+
 function renderAnalytics(data, cont) {
-    const m     = data.portfolio_metrics || {};
-    const div   = data.diversification   || {};
-    const hs    = data.holdings          || [];
-    const total = data.total_value       || 0;
+    const m = data.portfolio_metrics || {};
+    const div = data.diversification || {};
+    const hs = data.holdings || [];
+    const total = data.total_value || 0;
+    const bmark = data.benchmark_comparison;
+    const corr = data.correlation_matrix;
+    const stress = data.stress_scenarios || [];
+    const portBeta = data.portfolio_beta;
 
-    const retClass = m.annual_return_pct >= 0 ? 'pos' : 'neg';
-    const retSign  = m.annual_return_pct >= 0 ? '+' : '';
+    const retClass = (m.annual_return_pct ?? 0) >= 0 ? 'pos' : 'neg';
+    const retSign = (m.annual_return_pct ?? 0) >= 0 ? '+' : '';
 
-    /* ---- Stat cards with tooltips ---- */
+    /* ---- Stat cards ---- */
     const statsHtml = `
     <div class="analytics-grid">
         <div class="stat-card">
             <span class="stat-label has-tooltip" data-tip="${TIPS['Portfolio Value']}">Portfolio Value</span>
-            <span class="stat-value">$${total.toLocaleString('en-US',{maximumFractionDigits:2})}</span>
+            <span class="stat-value">$${total.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
         </div>
         <div class="stat-card">
             <span class="stat-label has-tooltip" data-tip="${TIPS['Annual Return (est.)']}">Annual Return (est.)</span>
-            <span class="stat-value ${retClass}">${m.annual_return_pct != null ? retSign+m.annual_return_pct+'%' : '—'}</span>
+            <span class="stat-value ${retClass}">${m.annual_return_pct != null ? retSign + m.annual_return_pct + '%' : '—'}</span>
         </div>
         <div class="stat-card">
             <span class="stat-label has-tooltip" data-tip="${TIPS['Annual Volatility']}">Annual Volatility</span>
-            <span class="stat-value">${m.annual_volatility_pct != null ? m.annual_volatility_pct+'%' : '—'}</span>
+            <span class="stat-value">${m.annual_volatility_pct != null ? m.annual_volatility_pct + '%' : '—'}</span>
             <span class="stat-sub">Annualised std-dev</span>
         </div>
         <div class="stat-card">
             <span class="stat-label has-tooltip" data-tip="${TIPS['Sharpe Ratio']}">Sharpe Ratio</span>
-            <span class="stat-value ${m.sharpe_ratio >= 1 ? 'pos' : m.sharpe_ratio < 0 ? 'neg' : ''}">${m.sharpe_ratio ?? '—'}</span>
+            <span class="stat-value ${(m.sharpe_ratio ?? 0) >= 1 ? 'pos' : (m.sharpe_ratio ?? 0) < 0 ? 'neg' : ''}">${m.sharpe_ratio ?? '—'}</span>
             <span class="stat-sub">RF rate 4.5%</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label has-tooltip" data-tip="${TIPS['Portfolio Beta']}">Portfolio Beta</span>
+            <span class="stat-value">${portBeta ?? '—'}</span>
+            <span class="stat-sub">vs S&amp;P 500</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label has-tooltip" data-tip="${TIPS['VaR (1-day, 95%)']}">VaR 1-Day (95%)</span>
+            <span class="stat-value neg">${m.var_1d_95 != null ? m.var_1d_95 + '%' : '—'}</span>
+            <span class="stat-sub">Max daily loss, 95% conf.</span>
         </div>
     </div>`;
 
-    /* ---- Diversification ring ---- */
-    const score    = div.score || 0;
-    const circ     = 2 * Math.PI * 34;
-    const filled   = (score / 100) * circ;
+    /* ---- Diversification panel ---- */
+    const score = div.score || 0;
+    const circ = 2 * Math.PI * 34;
+    const filled = (score / 100) * circ;
     const ringColor = score >= 70 ? 'var(--bullish)' : score >= 45 ? 'var(--brand)' : 'var(--bearish)';
-    const flags     = (div.flags || []).map(f => `<div class="div-flags">⚠ ${f}</div>`).join('');
+    const scoreLabel = score >= 70 ? 'Well Diversified' : score >= 45 ? 'Moderately Diversified' : 'Concentrated';
+    const scoreDesc = score >= 70
+        ? 'Good spread across sectors and position sizes.'
+        : score >= 45
+            ? 'Decent spread but notable concentration risks exist.'
+            : 'Portfolio is heavily concentrated — significant single-name or sector risk.';
+
+    // Flags as styled chips
+    const flagChips = (div.flags || []).map(f =>
+        `<div class="div-flag-chip">Alert: ${f}</div>`
+    ).join('');
+
+    // Asset class pills
+    const assetCls = div.asset_class_breakdown || {};
+    const ASSET_COLORS = { Equity: 'var(--text-1)', ETF: 'var(--text-2)', Crypto: 'var(--text-1)', 'Fixed Income': 'var(--text-3)', 'Unknown': 'var(--border)' };
+    const assetPills = Object.entries(assetCls).sort((a, b) => b[1] - a[1]).map(([cls, pct]) =>
+        `<div class="div-asset-pill" style="border-color:${ASSET_COLORS[cls] || 'var(--border)'}">
+            <span class="div-asset-dot" style="background:${ASSET_COLORS[cls] || 'var(--text-3)'}"></span>
+            <span>${cls}</span><strong>${Math.round(pct)}%</strong>
+        </div>`
+    ).join('');
+
+    // Concentration stat — biggest holding
+    const biggest = hs.length ? hs.reduce((a, b) => (b.weight_pct || 0) > (a.weight_pct || 0) ? b : a) : null;
+    const biggestStr = biggest ? `<div class="div-stat"><span>Largest position</span><strong>${biggest.ticker} — ${biggest.weight_pct}%</strong></div>` : '';
+    const sectorCount = Object.keys(div.sector_breakdown || {}).length;
 
     /* ---- Sector bars ---- */
     const sectors = div.sector_breakdown || {};
-    const sectorBars = Object.entries(sectors).sort((a,b) => b[1]-a[1]).map(([s, pct]) => `
+    const sectorBars = Object.entries(sectors).sort((a, b) => b[1] - a[1]).map(([s, pct]) => `
         <div class="sector-row">
             <div class="sector-name">${s}</div>
             <div class="sector-bar-bg"><div class="sector-bar-fill" style="width:${pct}%"></div></div>
             <div class="sector-pct">${Math.round(pct)}%</div>
         </div>`).join('');
 
-    /* ---- Holdings detail with sparklines ---- */
+    /* ---- Holdings table ---- */
     const holdRows = hs.map(h => {
-        const pnl    = h.gain_loss  ?? 0;
-        const pnlPct = h.gain_pct   ?? 0;
+        const pnl = h.gain_loss ?? 0;
+        const pnlPct = h.gain_pct ?? 0;
         const pnlCls = pnl >= 0 ? 'pos' : 'neg';
-        const sign   = pnl >= 0 ? '+' : '';
-        const spark  = buildSparkline(h.sparkline || []);
+        const sign = pnl >= 0 ? '+' : '';
+        const spark = buildSparkline(h.sparkline || []);
+        const bar52 = build52wBar(h);
+        const betaCls = (h.beta ?? 1) > 1.5 ? 'neg' : (h.beta ?? 1) < 0.6 ? 'pos' : '';
+        const peStr = h.pe_ratio != null
+            ? `${h.pe_ratio}x<span style="font-size:.68rem;color:var(--text-3);margin-left:2px">${h.pe_type || ''}</span>`
+            : '—';
         return `<tr>
             <td><strong>${h.ticker}</strong></td>
             <td class="sparkline-cell">${spark}</td>
             <td>$${h.current_price?.toFixed(2) ?? '—'}</td>
-            <td class="has-tooltip" data-tip="${TIPS['Weight']}">${h.weight_pct ?? '—'}%</td>
-            <td class="${pnlCls} has-tooltip" data-tip="${TIPS['P&L']}">${sign}$${Math.abs(pnl).toFixed(2)}</td>
+            <td class="w52-cell">${bar52}</td>
+            <td>${h.weight_pct ?? '—'}%</td>
+            <td class="${pnlCls}">${sign}$${Math.abs(pnl).toFixed(2)}</td>
             <td class="${pnlCls}">${sign}${pnlPct.toFixed(2)}%</td>
-            <td class="has-tooltip" data-tip="${TIPS['Annual Volatility']}">${h.annual_volatility_pct != null ? h.annual_volatility_pct+'%' : '—'}</td>
+            <td>${h.annual_volatility_pct != null ? h.annual_volatility_pct + '%' : '—'}</td>
+            <td class="${betaCls}">${h.beta ?? '—'}</td>
+            <td>${peStr}</td>
             <td><span style="color:var(--text-2);font-size:.78rem">${h.sector || '—'}</span></td>
         </tr>`;
     }).join('');
 
     cont.innerHTML = `
         ${statsHtml}
+        ${buildBenchmarkChart(bmark)}
         <div class="analytics-row">
-            <div class="analytics-card">
+            <div class="analytics-card div-card">
                 <h3><span class="has-tooltip" data-tip="${TIPS['Diversification Score']}">Diversification</span></h3>
-                <div class="div-score-wrap">
+                <div class="div-ring-row">
                     <div class="div-ring">
-                        <svg width="80" height="80" viewBox="0 0 80 80">
-                            <circle class="div-ring-bg"   cx="40" cy="40" r="34"/>
-                            <circle class="div-ring-fill" cx="40" cy="40" r="34" stroke="${ringColor}"
+                        <svg width="88" height="88" viewBox="0 0 88 88">
+                            <circle class="div-ring-bg"   cx="44" cy="44" r="34"/>
+                            <circle class="div-ring-fill" cx="44" cy="44" r="34" stroke="${ringColor}"
                                 stroke-dasharray="${filled} ${circ}"/>
                         </svg>
                         <div class="div-ring-label" style="color:${ringColor}">${score}</div>
                     </div>
-                    <div class="div-score-meta">
-                        <div class="div-label">${div.label || '—'}</div>
-                        <div style="font-size:.8rem;color:var(--text-3)">${hs.length} position${hs.length!==1?'s':''}</div>
-                        ${flags}
+                    <div class="div-ring-meta">
+                        <div class="div-label" style="color:${ringColor}">${scoreLabel}</div>
+                        <div class="div-desc">${scoreDesc}</div>
+                        <div class="div-stats">
+                            <div class="div-stat"><span>Positions</span><strong>${hs.length}</strong></div>
+                            <div class="div-stat"><span>Sectors</span><strong>${sectorCount}</strong></div>
+                            ${biggestStr}
+                        </div>
                     </div>
                 </div>
+                <div class="div-assets">${assetPills || '—'}</div>
+                ${flagChips ? `<div class="div-flag-list">${flagChips}</div>` : ''}
             </div>
             <div class="analytics-card">
                 <h3>Sector Breakdown</h3>
                 <div class="sector-bars">${sectorBars || '<p style="color:var(--text-3);font-size:.85rem">—</p>'}</div>
             </div>
         </div>
+        ${buildStressTest(stress, portBeta)}
+        ${buildCorrWeb(corr)}
         <div class="analytics-card" style="margin-bottom:1rem">
             <h3>Holdings Detail</h3>
             <div style="overflow-x:auto">
                 <table class="holdings-table">
                     <thead><tr>
-                        <th>Ticker</th><th>30d Chart</th><th>Price</th>
-                        <th>Weight</th><th>P&L $</th><th>P&L %</th><th>Volatility</th><th>Sector</th>
+                        <th>Ticker</th><th>30d</th><th>Price</th><th>52w Range</th>
+                        <th>Weight</th><th>P&amp;L $</th><th>P&amp;L %</th>
+                        <th>Volatility</th><th>Beta</th><th>P/E</th><th>Sector</th>
                     </tr></thead>
                     <tbody>${holdRows}</tbody>
                 </table>
             </div>
         </div>`;
+
+    // Kick off the correlation physics sim after DOM is written
+    if (corr) initCorrSim(corr);
 }
+
 
 /* =====================================================
    ACTION ITEMS
@@ -501,10 +902,10 @@ function setupActions() {
 }
 
 async function loadActions() {
-    const btn     = $('refresh-actions-btn');
+    const btn = $('refresh-actions-btn');
     const spinner = $('actions-spinner');
     const btnText = btn.querySelector('.btn-text');
-    const cont    = $('actions-container');
+    const cont = $('actions-container');
 
     if (!holdings.length) { alert('Add holdings first.'); switchTab('portfolio'); return; }
     btnText.textContent = 'Analyzing…';
@@ -513,13 +914,13 @@ async function loadActions() {
     cont.innerHTML = '<div class="empty-state"><div class="empty-glow"></div><p>Running portfolio analysis…</p></div>';
 
     try {
-        const res  = await fetch(`${API}/api/actions`);
+        const res = await fetch(`${API}/api/actions`);
         const data = await res.json();
         renderActions(data.items || [], cont);
-    } catch(e) {
+    } catch (e) {
         cont.innerHTML = `<div class="empty-state"><p style="color:var(--bearish)">Failed: ${e.message}</p></div>`;
     } finally {
-        btnText.textContent = '↻ Refresh Suggestions';
+        btnText.textContent = 'Refresh Suggestions';
         spinner.classList.add('hidden');
         btn.disabled = false;
     }

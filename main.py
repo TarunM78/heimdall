@@ -119,11 +119,13 @@ def analytics():
 def generate_brief():
     if not holdings_db:
         return {"brief": []}
-    raw_news = fetch_news_for_portfolio([h["ticker"] for h in holdings_db])
-    if not raw_news:
+    news_result = fetch_news_for_portfolio([h["ticker"] for h in holdings_db])
+    ticker_news = news_result.get("ticker_news", [])
+    macro_news  = news_result.get("macro_news", [])
+    if not ticker_news:
         return {"brief": []}
     try:
-        return {"brief": analyze_news_batch(holdings_db, raw_news, profile_db)}
+        return {"brief": analyze_news_batch(holdings_db, ticker_news, profile_db, macro_news=macro_news)}
     except Exception as e:
         print(f"Brief error: {e}")
         raise HTTPException(status_code=500, detail="Failed to analyze news")
@@ -136,14 +138,15 @@ def generate_brief():
 def overall_brief():
     if not holdings_db:
         return {"error": "No holdings"}
-    raw_news = fetch_news_for_portfolio([h["ticker"] for h in holdings_db])
-    # Get analytics (used for context in LLM prompt)
+    news_result = fetch_news_for_portfolio([h["ticker"] for h in holdings_db])
+    ticker_news = news_result.get("ticker_news", [])
+    macro_news  = news_result.get("macro_news", [])
     try:
         analytic_data = get_portfolio_analytics(holdings_db)
     except Exception:
         analytic_data = {}
     try:
-        result = generate_overall_brief(holdings_db, raw_news, analytic_data, profile_db)
+        result = generate_overall_brief(holdings_db, ticker_news, analytic_data, profile_db, macro_news=macro_news)
         return result
     except Exception as e:
         print(f"Overall brief error: {e}")
