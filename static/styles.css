@@ -125,10 +125,7 @@ a {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    background: linear-gradient(120deg, #ffffff 0%, #ffffff 33%, #9f7aea 66%, #9f7aea 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ffffff;
 }
 
 .sidebar-close {
@@ -1395,7 +1392,7 @@ a {
     gap: 0.75rem;
     transition: all var(--transition);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .action-item:hover {
@@ -1634,6 +1631,12 @@ cursor: help;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1rem;
+    align-items: stretch;
+}
+
+.analytics-row > .analytics-card,
+.analytics-row > #alpha-quadrant-container {
+    height: 100%;
 }
 
 @media (max-width: 800px) {

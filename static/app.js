@@ -1311,7 +1311,7 @@ function buildAlphaQuadrant(holdings) {
     const points = holdings.filter(h => h.annual_volatility_pct != null && h.annual_return_pct != null);
     if (!points.length) return '';
 
-    const W = 460, H = 280;
+    const W = 460, H = 420;
     const pad = 35;
     
     // Limits
@@ -1783,7 +1783,7 @@ function renderAnalytics(data, cont) {
             // However, we can use the SVG viewBox dimensions (460x280) and padding (35)
             // Or easier: fetch them from the current transformation if possible.
             // For now, let's estimate based on W=460, H=280, pad=35
-            const W = 460, H = 280, pad = 35;
+            const W = 460, H = 420, pad = 35;
             const viewW = W - pad * 2;
             const viewH = H - pad * 2;
 
