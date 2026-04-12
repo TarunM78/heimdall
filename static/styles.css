@@ -125,7 +125,7 @@ a {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    background: linear-gradient(120deg, #ffffff 0%, #6ab4ff 33%, #ffffff 66%, #89057e 100%);
+    background: linear-gradient(120deg, #ffffff 0%, #ffffff 33%, #6f3d8d 66%, #59028f 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
