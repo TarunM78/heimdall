@@ -20,6 +20,10 @@ load_dotenv(override=True)
 
 app = FastAPI(title="Heimdall API")
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
 # ---------------------------------------------------------------------------
 # Auth0 Configuration
 # ---------------------------------------------------------------------------

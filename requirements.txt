@@ -16,3 +16,4 @@ cryptography==42.0.5
 openai>=1.0.0
 requests
 aiohttp
+gunicorn==22.0.0
