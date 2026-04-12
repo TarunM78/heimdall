@@ -1,0 +1,843 @@
+# YFinance News Debug Log
+============================================================
+
+--- TICKER: AAPL ---
+  Title: Gary Black Says Tesla's 8-Week Slide Driven By 'Disappointing' Deliveries, Robotaxi Doubts: 'EVs Still Comprise 70%...'
+  Link:  https://finance.yahoo.com/markets/stocks/articles/gary-black-says-teslas-8-193109616.html
+  Pub:   Benzinga
+
+  Title: Japan Bets $16 Billion to Propel Rapidus in Global AI Chip Race
+  Link:  https://finance.yahoo.com/sectors/technology/articles/japan-bets-16-billion-propel-112506649.html
+  Pub:   Bloomberg
+
+  Title: VTSAX vs VOO ETF: Which Vanguard Fund Should You Buy in 2026?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/vtsax-vs-voo-etf-vanguard-110957504.html
+  Pub:   TipRanks
+
+  Title: Apple Hires Uber’s Asia-Pacific Government Relations Chief
+  Link:  https://finance.yahoo.com/sectors/technology/articles/apple-hires-uber-asia-pacific-000000401.html
+  Pub:   Bloomberg
+
+  Title: Apple, Levi’s, and 5 More Stocks Get Analyst Attention
+  Link:  https://www.barrons.com/articles/apple-levis-and-5-more-stocks-get-analyst-attention-ad9fadf3?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: Wall Street Banks Try Out Anthropic’s Mythos as US Urges
+  Link:  https://finance.yahoo.com/news/wall-street-banks-try-anthropic-203030964.html
+  Pub:   Bloomberg
+
+  Title: Mantle’s xStocks Rollout Pushes Tokenized Equities Closer to Real Onchain Liquidity
+  Link:  https://www.cryptoprowl.com/releases/mantles-xstocks-rollout-pushes-tokenized-equities-closer-to-real-onchain-liquidity-4131
+  Pub:   CryptoProwl
+
+  Title: Taiwan Semiconductor Manufacturing (TSM): The Best Under-The-Radar AI Stock in Billionaire Ken Fisher’s Portfolio?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/taiwan-semiconductor-manufacturing-tsm-best-212423173.html
+  Pub:   Insider Monkey
+
+  Title: Anthropic’s New AI Model Triggered an Emergency Banking Meeting. It’s a Reason to Buy Cybersecurity Stocks.
+  Link:  https://www.barrons.com/articles/bessent-powell-anthropic-mythos-cybersecurity-crowdstrike-stock-25ae1cb7?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: Intel Stock Gains 51% in 8 Days. Why the Company Has a ‘Renewed Lease on Life.’
+  Link:  https://www.barrons.com/articles/intel-stock-price-analysts-winning-streak-a1bdcdf4?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+
+--- TICKER: MSFT ---
+  Title: Gary Black Says Tesla's 8-Week Slide Driven By 'Disappointing' Deliveries, Robotaxi Doubts: 'EVs Still Comprise 70%...'
+  Link:  https://finance.yahoo.com/markets/stocks/articles/gary-black-says-teslas-8-193109616.html
+  Pub:   Benzinga
+
+  Title: Microsoft's 'Copilot Code Red': CEO Nadella Deploys Emergency Overhaul To Crush AI Rivals
+  Link:  https://finance.yahoo.com/markets/stocks/articles/microsofts-copilot-code-red-ceo-173104254.html
+  Pub:   Benzinga
+
+  Title: Goldman Sachs drops a bombshell on software stocks
+  Link:  https://www.thestreet.com/investing/stocks/goldman-sachs-drops-a-bombshell-on-software-stocks
+  Pub:   TheStreet
+
+  Title: Not All the Signals Are Bearish Under President Donald Trump — Here’s What Bulls Are Watching
+  Link:  https://247wallst.com/investing/2026/04/11/not-all-the-signals-are-bearish-under-president-donald-trump-heres-what-bulls-are-watching/
+  Pub:   24/7 Wall St.
+
+  Title: Nvidia Just Posted Its Longest Winning Streak Since 2023. Is This Time for Real?
+  Link:  https://247wallst.com/investing/2026/04/11/nvidia-just-posted-its-longest-winning-streak-since-2023-is-this-time-for-real/
+  Pub:   24/7 Wall St.
+
+  Title: VTSAX vs VOO ETF: Which Vanguard Fund Should You Buy in 2026?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/vtsax-vs-voo-etf-vanguard-110957504.html
+  Pub:   TipRanks
+
+  Title: GDV returned 42% in a year by betting on dividend anchors like JPMorgan and Amex
+  Link:  https://247wallst.com/investing/2026/04/11/gdv-returned-42-in-a-year-by-betting-on-dividend-anchors-like-jpmorgan-and-amex/
+  Pub:   24/7 Wall St.
+
+  Title: Here's My Top Artificial Intelligence (AI) Stock for Retirees (Hint: It's Not Nvidia)
+  Link:  https://www.fool.com/investing/2026/04/11/heres-my-top-artificial-intelligence-ai-stock-for/
+  Pub:   Motley Fool
+
+  Title: Microsoft Staff Tell Carbon Removal Projects That Deals Paused
+  Link:  https://finance.yahoo.com/sectors/energy/articles/microsoft-staff-tell-carbon-removal-093654640.html
+  Pub:   Bloomberg
+
+  Title: AI Job-pocalypse: 5 million jobs at risk in new automated era
+  Link:  https://finance.yahoo.com/economy/articles/ai-job-pocalypse-5-million-071243344.html
+  Pub:   Investing.com
+
+
+--- TICKER: GOOGL ---
+  Title: Dow Jones Futures Eye Direct U.S.-Iran Talks; Google, Amazon, Nvidia In Buy Areas
+  Link:  https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-iran-talks-earnings-google-amazon-nvidia-buy-areas/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: This Is the Smartest Artificial Intelligence (AI) Stock to Buy With $500 Right Now
+  Link:  https://www.fool.com/investing/2026/04/11/this-is-the-smartest-artificial-intelligence-ai-st/
+  Pub:   Motley Fool
+
+  Title: AI Juggernaut Rumbles on Even as Markets Whipsaw
+  Link:  https://finance.yahoo.com/sectors/technology/articles/ai-juggernaut-rumbles-even-markets-190000638.html
+  Pub:   Bloomberg
+
+  Title: Google (GOOGL), Intel (INTC) Partner to Advance AI Cloud Infrastructure
+  Link:  https://finance.yahoo.com/sectors/technology/articles/google-googl-intel-intc-partner-173435521.html
+  Pub:   Insider Monkey
+
+  Title: Alphabet’s SpaceX Windfall Could Recast Funding For AI And Cloud Growth
+  Link:  https://finance.yahoo.com/markets/stocks/articles/alphabet-spacex-windfall-could-recast-171204741.html
+  Pub:   Simply Wall St.
+
+  Title: Reddit (RDDT) Trades $84 Below Average Price Target Following 37% 2026 Decline
+  Link:  https://247wallst.com/investing/2026/04/11/reddit-rddt-trades-84-below-average-price-target-following-37-2026-decline/
+  Pub:   24/7 Wall St.
+
+  Title: Alphabet (GOOGL) Is Up 7.3% After Waymo Expands Robotaxi Service To Nashville - What's Changed
+  Link:  https://finance.yahoo.com/markets/stocks/articles/alphabet-googl-7-3-waymo-160757525.html
+  Pub:   Simply Wall St.
+
+  Title: Google And Four Blue Dots Lead 5 Stocks Near Buy Points
+  Link:  https://www.investors.com/news/google-googl-stock-ai-plays-lead-5-stocks-near-buy-points/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: Analysts Love Alphabet Stock — They Just Can’t Agree On a Direction
+  Link:  https://247wallst.com/investing/2026/04/11/analysts-love-alphabet-stock-they-just-cant-agree-on-a-direction/
+  Pub:   24/7 Wall St.
+
+  Title: Nvidia Just Posted Its Longest Winning Streak Since 2023. Is This Time for Real?
+  Link:  https://247wallst.com/investing/2026/04/11/nvidia-just-posted-its-longest-winning-streak-since-2023-is-this-time-for-real/
+  Pub:   24/7 Wall St.
+
+
+--- TICKER: TSLA ---
+  Title: Gary Black Says Tesla's 8-Week Slide Driven By 'Disappointing' Deliveries, Robotaxi Doubts: 'EVs Still Comprise 70%...'
+  Link:  https://finance.yahoo.com/markets/stocks/articles/gary-black-says-teslas-8-193109616.html
+  Pub:   Benzinga
+
+  Title: Prediction: A Cheaper EV Could Be a Game Changer for Tesla's Business
+  Link:  https://www.fool.com/investing/2026/04/11/prediction-a-cheaper-ev-could-be-a-game-changer-fo/
+  Pub:   Motley Fool
+
+  Title: SpaceX Is Going Public. Why a Tesla Merger Could Be Musk’s Real Endgame.
+  Link:  https://www.barrons.com/articles/spacex-ipo-tesla-merger-elon-musk-7e352054?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: The House That Built Miranda Lambert — Her 25-Acre Texas Estate With Shooting Range Just Sold for $1.59M
+  Link:  https://www.yahoo.com/entertainment/music/articles/house-built-miranda-lambert-her-144621736.html
+  Pub:   Benzinga
+
+  Title: Anthony Scaramucci Says He Owns SpaceX Stock And Won't Miss Out On The IPO Despite Elon Musk's 'Cult Of Personality' Premium
+  Link:  https://finance.yahoo.com/markets/stocks/articles/anthony-scaramucci-says-owns-spacex-143105685.html
+  Pub:   Benzinga
+
+  Title: Is It Too Late to Buy Tesla Stock?
+  Link:  https://www.fool.com/investing/2026/04/11/is-it-too-late-to-buy-tesla-stock/
+  Pub:   Motley Fool
+
+  Title: JPMorgan Chase's Continued Success Will Hinge On How Quickly It Can Integrate Blockchain, AI, CEO Jamie Dimon Says
+  Link:  https://finance.yahoo.com/sectors/technology/articles/jpmorgan-chases-continued-success-hinge-120113503.html
+  Pub:   Benzinga
+
+  Title: Japan Bets $16 Billion to Propel Rapidus in Global AI Chip Race
+  Link:  https://finance.yahoo.com/sectors/technology/articles/japan-bets-16-billion-propel-112506649.html
+  Pub:   Bloomberg
+
+  Title: Tesla Stock Investors Just Got Good News From Wall Street Analysts About Robotaxis
+  Link:  https://www.fool.com/investing/2026/04/11/tesla-stock-investors-good-news-from-wall-street/
+  Pub:   Motley Fool
+
+  Title: Tesla stock shaky after new model denial
+  Link:  https://www.thestreet.com/automotive/tesla-stock-shaky-after-new-model-denial
+  Pub:   TheStreet
+
+
+--- TICKER: AMZN ---
+  Title: Andy Jassy Just Announced Wonderful News for Amazon Stock Investors
+  Link:  https://www.fool.com/investing/2026/04/11/andy-jassy-just-announced-wonderful-news-for-amazo/
+  Pub:   Motley Fool
+
+  Title: Dow Jones Futures Eye Direct U.S.-Iran Talks; Google, Amazon, Nvidia In Buy Areas
+  Link:  https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-iran-talks-earnings-google-amazon-nvidia-buy-areas/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: Gary Black Says Tesla's 8-Week Slide Driven By 'Disappointing' Deliveries, Robotaxi Doubts: 'EVs Still Comprise 70%...'
+  Link:  https://finance.yahoo.com/markets/stocks/articles/gary-black-says-teslas-8-193109616.html
+  Pub:   Benzinga
+
+  Title: AI Juggernaut Rumbles on Even as Markets Whipsaw
+  Link:  https://finance.yahoo.com/sectors/technology/articles/ai-juggernaut-rumbles-even-markets-190000638.html
+  Pub:   Bloomberg
+
+  Title: Jim Cramer Says for Buy Now, Pay Later Play He’d “Rather Own a Pure Play Like Affirm”
+  Link:  https://finance.yahoo.com/markets/stocks/articles/jim-cramer-says-buy-now-153442977.html
+  Pub:   Insider Monkey
+
+  Title: Nvidia Just Posted Its Longest Winning Streak Since 2023. Is This Time for Real?
+  Link:  https://247wallst.com/investing/2026/04/11/nvidia-just-posted-its-longest-winning-streak-since-2023-is-this-time-for-real/
+  Pub:   24/7 Wall St.
+
+  Title: Amazon vs. Walmart: The Retail War Just Picked a Winner
+  Link:  https://247wallst.com/investing/2026/04/11/amazon-vs-walmart-the-retail-war-just-picked-a-winner/
+  Pub:   24/7 Wall St.
+
+  Title: Rigetti’s 108 Qubit Launch Tests Quantum Ambitions And Valuation Gap
+  Link:  https://finance.yahoo.com/markets/stocks/articles/rigetti-108-qubit-launch-tests-121224543.html
+  Pub:   Simply Wall St.
+
+  Title: VTSAX vs VOO ETF: Which Vanguard Fund Should You Buy in 2026?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/vtsax-vs-voo-etf-vanguard-110957504.html
+  Pub:   TipRanks
+
+  Title: Hims And Hers Confronts Amazon Threat While Advancing AI Weight Loss Plan
+  Link:  https://finance.yahoo.com/sectors/healthcare/articles/hims-hers-confronts-amazon-threat-020923292.html
+  Pub:   Simply Wall St.
+
+
+--- TICKER: NVDA ---
+  Title: Mental Tips, Tricks & Lifehacks, Vol. 11
+  Link:  https://www.fool.com/investing/2026/04/11/mental-tips-tricks-lifehacks-vol-11/
+  Pub:   Motley Fool
+
+  Title: Prediction: The Best-Performing Artificial Intelligence (AI) Stock of Q2 2026 Isn't Nvidia. It's This One.
+  Link:  https://www.fool.com/investing/2026/04/11/prediction-the-best-performing-artificial-intellig/
+  Pub:   Motley Fool
+
+  Title: Andy Jassy Just Announced Wonderful News for Amazon Stock Investors
+  Link:  https://www.fool.com/investing/2026/04/11/andy-jassy-just-announced-wonderful-news-for-amazo/
+  Pub:   Motley Fool
+
+  Title: Dow Jones Futures Eye Direct U.S.-Iran Talks; Google, Amazon, Nvidia In Buy Areas
+  Link:  https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-iran-talks-earnings-google-amazon-nvidia-buy-areas/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: Forget Bitcoin ETFs; This Is How Crypto Is Really Going Mainstream
+  Link:  https://www.fool.com/investing/2026/04/11/this-is-how-crypto-is-going-mainstream/
+  Pub:   Motley Fool
+
+  Title: This Is the Smartest Artificial Intelligence (AI) Stock to Buy With $500 Right Now
+  Link:  https://www.fool.com/investing/2026/04/11/this-is-the-smartest-artificial-intelligence-ai-st/
+  Pub:   Motley Fool
+
+  Title: I've Changed My Mind on Palantir Stock. The Great Repricing Makes It a Buy.
+  Link:  https://www.fool.com/investing/2026/04/11/ive-changed-my-mind-on-palantir-stock-the-great-re/
+  Pub:   Motley Fool
+
+  Title: Prediction: A Cheaper EV Could Be a Game Changer for Tesla's Business
+  Link:  https://www.fool.com/investing/2026/04/11/prediction-a-cheaper-ev-could-be-a-game-changer-fo/
+  Pub:   Motley Fool
+
+  Title: 3 Dividend Stocks That Are Obvious Buys in Today's Uncertain Market
+  Link:  https://www.fool.com/investing/2026/04/11/3-dividend-stocks-that-are-obvious-buys-in-todays/
+  Pub:   Motley Fool
+
+  Title: Is Nvidia the Best Buy in the Entire Stock Market?
+  Link:  https://www.fool.com/investing/2026/04/11/is-nvidia-the-best-buy-in-the-entire-stock-market/
+  Pub:   Motley Fool
+
+
+--- TICKER: AVGO ---
+  Title: Could Investing $50,000 in Broadcom Stock Make You a Millionaire?
+  Link:  https://www.fool.com/investing/2026/04/11/could-investing-50000-in-broadcom-stock-make-you-a/
+  Pub:   Motley Fool
+
+  Title: What AI Fatigue? Anthropic's Red-Hot Growth Is Going to Supercharge These 3 AI Leaders.
+  Link:  https://www.fool.com/investing/2026/04/11/ai-fatigue-anthropic-hot-growth-ai-stock-avgo/
+  Pub:   Motley Fool
+
+  Title: Why Broadcom Stock Is a Better Long-Term AI Stock to Buy Than Nvidia
+  Link:  https://www.fool.com/investing/2026/04/10/why-broadcom-stock-is-a-better-long-term-ai-stock/
+  Pub:   Motley Fool
+
+  Title: S&P 500 Snaps 7-Day Winning Streak as Wall Street Logs Back-to-Back Weekly Gains
+  Link:  https://finance.yahoo.com/markets/stocks/articles/p-500-snaps-7-day-205811707.html
+  Pub:   MT Newswires
+
+  Title: Intel Stock Gains 51% in 8 Days. Why the Company Has a ‘Renewed Lease on Life.’
+  Link:  https://www.barrons.com/articles/intel-stock-price-analysts-winning-streak-a1bdcdf4?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: Stock Market Today: Nasdaq Closes Higher Ahead Of Peace Talks; Palantir Plunges (Live Coverage)
+  Link:  https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-cpi-inflation-data-march-tsmc-stock/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: Cloudflare Sell-Off Offers Buying Opportunity as Project Glasswing Concerns 'Overblown,' Oppenheimer Says
+  Link:  https://finance.yahoo.com/markets/stocks/articles/cloudflare-sell-off-offers-buying-195900143.html
+  Pub:   MT Newswires
+
+  Title: CoreWeave Jumps 13% On Multibillion Anthropic AI Capacity Deal
+  Link:  https://finance.yahoo.com/sectors/technology/articles/coreweave-jumps-13-multibillion-anthropic-193333210.html
+  Pub:   GuruFocus.com
+
+  Title: CoreWeave Rockets 12% on Anthropic Deal: Two Landmark Contracts in Two Days for the AI Cloud King
+  Link:  https://247wallst.com/investing/2026/04/10/coreweave-rockets-12-on-anthropic-deal-two-landmark-contracts-in-two-days-for-the-ai-cloud-king/
+  Pub:   24/7 Wall St.
+
+  Title: This Semiconductor Stock Is All You Need To Be Buying
+  Link:  https://247wallst.com/investing/2026/04/10/this-semiconductor-stock-is-all-you-need-to-be-buying/
+  Pub:   24/7 Wall St.
+
+
+--- TICKER: AMD ---
+  Title: Nvidia Just Posted Its Longest Winning Streak Since 2023. Is This Time for Real?
+  Link:  https://247wallst.com/investing/2026/04/11/nvidia-just-posted-its-longest-winning-streak-since-2023-is-this-time-for-real/
+  Pub:   24/7 Wall St.
+
+  Title: Intel vs. Advanced Micro Devices: Shifting Trends in Revenue
+  Link:  https://www.fool.com/coverage/charts/2026/04/10/intel-vs-advanced-micro-devices-shifting-trends-in-revenue/
+  Pub:   Motley Fool
+
+  Title: Taiwan Semiconductor Manufacturing (TSM): The Best Under-The-Radar AI Stock in Billionaire Ken Fisher’s Portfolio?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/taiwan-semiconductor-manufacturing-tsm-best-212423173.html
+  Pub:   Insider Monkey
+
+  Title: S&P 500 Snaps 7-Day Winning Streak as Wall Street Logs Back-to-Back Weekly Gains
+  Link:  https://finance.yahoo.com/markets/stocks/articles/p-500-snaps-7-day-205811707.html
+  Pub:   MT Newswires
+
+  Title: Stock Market Today: Nasdaq Closes Higher Ahead Of Peace Talks; Palantir Plunges (Live Coverage)
+  Link:  https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-cpi-inflation-data-march-tsmc-stock/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: This Semiconductor Stock Is All You Need To Be Buying
+  Link:  https://247wallst.com/investing/2026/04/10/this-semiconductor-stock-is-all-you-need-to-be-buying/
+  Pub:   24/7 Wall St.
+
+  Title: Equity Markets Mixed Intraday Ahead of US-Iran Talks
+  Link:  https://finance.yahoo.com/markets/stocks/articles/equity-markets-mixed-intraday-ahead-182323661.html
+  Pub:   MT Newswires
+
+  Title: This Nuclear Stock Had Its Best Day Ever. Cathie Wood’s ARK Took the Moment to Sell.
+  Link:  https://www.barrons.com/articles/bwx-nuclear-stock-price-cathie-wood-ark-85a05583?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: AMD Gains 4%, Broadcom Climbs 5%: The AI Chip Rally Has Two Very Different Winners Today
+  Link:  https://247wallst.com/investing/2026/04/10/amd-gains-4-broadcom-climbs-5-the-ai-chip-rally-has-two-very-different-winners-today/
+  Pub:   24/7 Wall St.
+
+  Title: Nvidia vs. AMD: Which Stock Will Outperform The Market In 2026
+  Link:  https://247wallst.com/investing/2026/04/10/nvidia-vs-amd-which-stock-will-outperform-the-market-in-2026/
+  Pub:   24/7 Wall St.
+
+
+--- TICKER: PLTR ---
+  Title: I've Changed My Mind on Palantir Stock. The Great Repricing Makes It a Buy.
+  Link:  https://www.fool.com/investing/2026/04/11/ive-changed-my-mind-on-palantir-stock-the-great-re/
+  Pub:   Motley Fool
+
+  Title: Why Palantir (PLTR) Remains a Standout in Agentic AI at Scale
+  Link:  https://finance.yahoo.com/markets/stocks/articles/why-palantir-pltr-remains-standout-170653205.html
+  Pub:   Insider Monkey
+
+  Title: Jim Cramer on Palantir: “I’m Going to Stand By It”
+  Link:  https://finance.yahoo.com/markets/stocks/articles/jim-cramer-palantir-m-going-154754487.html
+  Pub:   Insider Monkey
+
+  Title: Trump name-drops Palantir by ticker symbol, 1st president to hype a stock. It surged $10B in minutes amid a 16% freefall
+  Link:  https://finance.yahoo.com/markets/stocks/articles/trump-name-drops-palantir-ticker-154500129.html
+  Pub:   Moneywise
+
+  Title: Michael Burry Saying Anthropic Eating Palantir's Lunch Is 'The Wrong Take And Fictional Narrative,' Says Top Analyst
+  Link:  https://finance.yahoo.com/markets/stocks/articles/michael-burry-saying-anthropic-eating-150115784.html
+  Pub:   Benzinga
+
+  Title: Palantir stock caught in a battle over pension billions
+  Link:  https://www.thestreet.com/investing/palantir-stock-caught-in-a-battle-over-pension-billions
+  Pub:   TheStreet
+
+  Title: Something just changed with Palantir stock, and investors noticed
+  Link:  https://www.thestreet.com/investing/stocks/something-just-changed-with-palantir-stock-and-investors-noticed
+  Pub:   TheStreet
+
+  Title: Stock Market Today, April 10: Palantir Falls as AI Competition Pressures Valuation
+  Link:  https://www.fool.com/coverage/stock-market-today/2026/04/10/stock-market-today-april-10-palantir-falls-as-ai-competition-pressures-valuation/
+  Pub:   Motley Fool
+
+  Title: Why Bandwidth (BAND) Stock Is Falling Today
+  Link:  https://finance.yahoo.com/markets/stocks/articles/why-bandwidth-band-stock-falling-220644254.html
+  Pub:   StockStory
+
+  Title: Should You Buy, Sell, or Hold Palantir Stock Amid Trump Praise?
+  Link:  https://www.barchart.com/story/news/1249507/should-you-buy-sell-or-hold-palantir-stock-amid-trump-praise
+  Pub:   Barchart
+
+
+--- TICKER: SPY ---
+  Title: Foreigners Own Nearly $30 Trillion in U.S. Stocks and Bonds. Here Is Why That Number Should Be on Every Investor's Radar
+  Link:  https://www.fool.com/investing/2026/04/11/foreigners-own-nearly-30-trillion-in-us-stocks-and/
+  Pub:   Motley Fool
+
+  Title: Trump Promised Cheap Beef — The Cattle Trade Crushed The S&P 500 For Years
+  Link:  https://finance.yahoo.com/markets/commodities/articles/trump-promised-cheap-beef-cattle-033109445.html
+  Pub:   Benzinga
+
+  Title: I’m 45 and I’ve Barely Invested in the Stock Market. I Recently Inherited $50,000. What Should I Do?
+  Link:  https://247wallst.com/personal-finance/2026/04/10/im-45-and-ive-barely-invested-in-the-stock-market-i-recently-inherited-50000-what-should-i-do/
+  Pub:   24/7 Wall St.
+
+  Title: Everyone’s Buying ETFs: Here’s What Retirement Savers Should Watch Out For
+  Link:  https://finance.yahoo.com/markets/options/articles/everyone-buying-etfs-retirement-savers-180409474.html
+  Pub:   GOBankingRates
+
+  Title: Nvidia vs. AMD: Which Stock Will Outperform The Market In 2026
+  Link:  https://247wallst.com/investing/2026/04/10/nvidia-vs-amd-which-stock-will-outperform-the-market-in-2026/
+  Pub:   24/7 Wall St.
+
+  Title: Inflation Soars to 3.3% in March: Prediction Markets Now See 63% Chance It Hits 4% in 2026
+  Link:  https://247wallst.com/investing/2026/04/10/inflation-soars-to-3-3-in-march-prediction-markets-now-see-63-chance-it-hits-4-in-2026/
+  Pub:   24/7 Wall St.
+
+  Title: CPI Inflation Rate Up Nearly +1%, As Expected
+  Link:  https://finance.yahoo.com/economy/articles/cpi-inflation-rate-nearly-1-144300564.html
+  Pub:   Zacks
+
+  Title: Exchange-Traded Funds Higher, Equity Futures Mixed Pre-Bell Amid Lingering Geopolitical Uncertainty, CPI Focus
+  Link:  https://finance.yahoo.com/markets/stocks/articles/exchange-traded-funds-higher-equity-131518323.html
+  Pub:   MT Newswires
+
+  Title: The S&P Hangs On The Edge As Today’s CPI Report Looms Over Open
+  Link:  https://247wallst.com/investing/2026/04/10/the-sp-hangs-on-the-edge-as-todays-cpi-report-looms-over-open/
+  Pub:   24/7 Wall St.
+
+  Title: The VIX Looks Calm, But Could Swing Wildly As The Market Digests CPI Data
+  Link:  https://247wallst.com/investing/2026/04/10/the-vix-looks-calm-but-could-swing-wildly-as-the-market-digests-cpi-data/
+  Pub:   24/7 Wall St.
+
+
+--- TICKER: QQQ ---
+  Title: QQQ Beat the Market 46% Last Year. Here’s the Volatility You’re Really Buying
+  Link:  https://247wallst.com/investing/2026/04/11/qqq-beat-the-market-46-last-year-heres-the-volatility-youre-really-buying/
+  Pub:   24/7 Wall St.
+
+  Title: Sandisk to join Nasdaq-100 in latest index reshuffle; Atlassian to be removed
+  Link:  https://finance.yahoo.com/markets/stocks/articles/sandisk-join-nasdaq-100-latest-015617480.html
+  Pub:   Investing.com
+
+  Title: Exchange-Traded Funds Fall, US Equities Mixed After Midday
+  Link:  https://finance.yahoo.com/markets/articles/exchange-traded-funds-fall-us-170922200.html
+  Pub:   MT Newswires
+
+  Title: CPI Inflation Rate Up Nearly +1%, As Expected
+  Link:  https://finance.yahoo.com/economy/articles/cpi-inflation-rate-nearly-1-144300564.html
+  Pub:   Zacks
+
+  Title: AI Agent OpenClaw Will Trade Stocks and Options for You. Here Are the Pros and Cons.
+  Link:  https://www.barrons.com/articles/openclaw-ai-agent-stocks-options-investing-09bd9edc?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: Exchange-Traded Funds Higher, Equity Futures Mixed Pre-Bell Amid Lingering Geopolitical Uncertainty, CPI Focus
+  Link:  https://finance.yahoo.com/markets/stocks/articles/exchange-traded-funds-higher-equity-131518323.html
+  Pub:   MT Newswires
+
+  Title: The VIX Looks Calm, But Could Swing Wildly As The Market Digests CPI Data
+  Link:  https://247wallst.com/investing/2026/04/10/the-vix-looks-calm-but-could-swing-wildly-as-the-market-digests-cpi-data/
+  Pub:   24/7 Wall St.
+
+  Title: The Nasdaq Turns Green, But The CPI Release Could Rock Markets Today
+  Link:  https://247wallst.com/investing/2026/04/10/the-nasdaq-turns-green-but-the-cpi-release-could-rock-markets-today/
+  Pub:   24/7 Wall St.
+
+  Title: The Zacks Analyst Blog Highlights MAGS, QQQ, VGT, XLK, SMH and FTEC
+  Link:  https://finance.yahoo.com/markets/stocks/articles/zacks-analyst-blog-highlights-mags-112000617.html
+  Pub:   Zacks
+
+  Title: 3 Key Signals Paint a Bullish Picture for US Stocks
+  Link:  https://beincrypto.com/stock-market-recovery-signals-april-2026/
+  Pub:   BeInCrypto
+
+
+--- TICKER: VTI ---
+  Title: VTSAX vs VOO ETF: Which Vanguard Fund Should You Buy in 2026?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/vtsax-vs-voo-etf-vanguard-110957504.html
+  Pub:   TipRanks
+
+  Title: I’m 45 and I’ve Barely Invested in the Stock Market. I Recently Inherited $50,000. What Should I Do?
+  Link:  https://247wallst.com/personal-finance/2026/04/10/im-45-and-ive-barely-invested-in-the-stock-market-i-recently-inherited-50000-what-should-i-do/
+  Pub:   24/7 Wall St.
+
+  Title: Retirees Love This $578 Billion ETF, But Switching to These 2 Could Boost Income by 40%
+  Link:  https://247wallst.com/investing/2026/04/10/retirees-love-this-578-billion-etf-but-switching-to-these-2-could-boost-income-by-40/
+  Pub:   24/7 Wall St.
+
+  Title: How Nurses at Non-Profit Hospitals Can Stash $49,000 a Year Into ETFs Like VOO and VTI
+  Link:  https://247wallst.com/investing/2026/04/09/how-nurses-at-non-profit-hospitals-can-stash-49000-a-year-into-etfs-like-voo-and-vti/
+  Pub:   24/7 Wall St.
+
+  Title: 3 Vanguard and Schwab ETFs Tech Workers Should Buy During RSU Vesting Years
+  Link:  https://247wallst.com/investing/2026/04/09/3-vanguard-and-schwab-etfs-tech-workers-should-buy-during-rsu-vesting-years/
+  Pub:   24/7 Wall St.
+
+  Title: Vanguard S&P 500 ETF vs. Vanguard Total Stock Market ETF: Which Is More Likely to Survive a Stock Market Crash or Recession?
+  Link:  https://www.fool.com/investing/2026/04/09/vanguard-sp-500-etf-vs-vanguard-total-stock-market/
+  Pub:   Motley Fool
+
+  Title: I Asked ChatGPT To Pick My 2026 Investment Portfolio — Then Had a Wealth Manager Review the Picks
+  Link:  https://finance.yahoo.com/markets/stocks/articles/asked-chatgpt-pick-2026-investment-090005026.html
+  Pub:   GOBankingRates
+
+  Title: The Popular Vanguard S&P 500 ETF Costs $605 a Share. Vanguard Doesn't Think That's a Problem.
+  Link:  https://www.fool.com/investing/2026/04/08/the-popular-vanguard-sp-500-etf-costs-605-a-share/
+  Pub:   Motley Fool
+
+  Title: Why UnitedHealth Stock Is Soaring Today
+  Link:  https://finance.yahoo.com/markets/stocks/articles/why-unitedhealth-stock-soaring-today-120109603.html
+  Pub:   GuruFocus.com
+
+  Title: VTI Owns Over 3,500 Stocks, Including Nvidia, Apple, and Microsoft. Is This the Smartest Way to Buy the Entire U.S. Market Right Now?
+  Link:  https://www.fool.com/investing/2026/04/05/vti-3500-stocks-nvidia-apple-microsoft-buy-etf/
+  Pub:   Motley Fool
+
+
+--- TICKER: BND ---
+  Title: How Nurses at Non-Profit Hospitals Can Stash $49,000 a Year Into ETFs Like VOO and VTI
+  Link:  https://247wallst.com/investing/2026/04/09/how-nurses-at-non-profit-hospitals-can-stash-49000-a-year-into-etfs-like-voo-and-vti/
+  Pub:   24/7 Wall St.
+
+  Title: Energy Funds Dominate a War-Driven Quarter
+  Link:  https://www.barrons.com/articles/energy-funds-iran-war-5fc384a1?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: There Are Only 2 Main Ways To Protect Money From Trump's Iran War
+  Link:  https://www.investors.com/etfs-and-funds/sectors/sp500-are-only-two-places-to-protect-money-from-trumps-iran-war/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: BNDW Offers 4.1% Yield and 50-Country Bond Coverage for Almost Nothing
+  Link:  https://247wallst.com/investing/2026/03/26/bndw-offers-4-1-yield-and-50-country-bond-coverage-for-almost-nothing/
+  Pub:   24/7 Wall St.
+
+  Title: I’m 58 With $1.2 Million Saved. A Financial Planner Said I’m Making One Critical Mistake
+  Link:  https://247wallst.com/investing/2026/03/17/im-58-with-1-2-million-saved-a-financial-planner-said-im-making-one-critical-mistake/
+  Pub:   24/7 Wall St.
+
+  Title: 7 Dividend ETFs Built to Survive a Recession and Pay You Through It
+  Link:  https://247wallst.com/investing/2026/03/16/7-dividend-etfs-built-to-survive-a-recession-and-pay-you-through-it-2/
+  Pub:   24/7 Wall St.
+
+  Title: 2026 Stock Market Crash Coming? 3 Best ETFs to Protect You Now
+  Link:  https://247wallst.com/investing/2026/02/24/2026-stock-market-crash-coming-3-best-etfs-to-protect-you-now/
+  Pub:   24/7 Wall St.
+
+  Title: Can’t Live on $2k a Month in Social Security? Add These ETFs to Your Retirement Portfolio
+  Link:  https://247wallst.com/investing/2026/02/01/cant-live-on-2k-a-month-in-social-security-add-these-etfs-to-your-retirement-portfolio/
+  Pub:   24/7 Wall St.
+
+  Title: Over 50? 3 ETFs to Buy Now to Supplement Your Future Social Security
+  Link:  https://247wallst.com/investing/2026/01/31/over-50-3-etfs-to-buy-now-to-supplement-your-future-social-security/
+  Pub:   24/7 Wall St.
+
+  Title: Here’s How Gold Hits $8,000, According to J.P. Morgan
+  Link:  https://www.barrons.com/articles/gold-prices-record-gains-ec34dd24?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+
+--- TICKER: BRK-B ---
+  Title: Berkshire Bet Constellation Cuts Guidance: Why Shares Rose 8%
+  Link:  https://www.marketbeat.com/originals/berkshire-bet-constellation-cuts-guidance-why-shares-rose-8/?utm_source=yahoofinance&utm_medium=yahoofinance
+  Pub:   MarketBeat
+
+  Title: Airlines Can Handle Iran Turbulence, But…
+  Link:  https://www.wsj.com/finance/investing/airlines-can-handle-iran-turbulence-but-50f88aa4?siteid=yhoof2&yptr=yahoo
+  Pub:   The Wall Street Journal
+
+  Title: Haven’t Filed Your Return? How to Get a Tax Break and Boost Your Savings.
+  Link:  https://www.barrons.com/articles/tax-breaks-ira-hsa-contributions-savings-strategies-3939d383?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: Value or Growth Aren’t Your Only Options
+  Link:  https://www.wsj.com/finance/stocks/value-or-growth-arent-your-only-options-3519006d?siteid=yhoof2&yptr=yahoo
+  Pub:   The Wall Street Journal
+
+  Title: Warren Buffett Is Retired. His Latest Advice Couldn’t Be More Timely for Young Investors.
+  Link:  https://www.barrons.com/articles/buffett-young-investors-stocks-70a5a504?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: Oil at $150-200? This Stock Was Built to Survive an Energy Shock
+  Link:  https://247wallst.com/investing/2026/04/07/oil-at-150-200-this-stock-was-built-to-survive-an-energy-shock/
+  Pub:   24/7 Wall St.
+
+  Title: Berkshire Hathaway (BRK-B) – Among the Best S&P 500 Stocks to Buy Right Now
+  Link:  https://finance.yahoo.com/markets/stocks/articles/berkshire-hathaway-brk-b-among-070107757.html
+  Pub:   Insider Monkey
+
+  Title: 5 Baby Boomer Stock Favorites Now Trading at a Discount
+  Link:  https://www.marketbeat.com/originals/5-baby-boomer-stock-favorites-now-trading-at-a-discount/?utm_source=yahoofinance&utm_medium=yahoofinance
+  Pub:   MarketBeat
+
+  Title: Do Companies That Stack the Vote Do Worse?
+  Link:  https://www.wsj.com/finance/stocks/do-companies-that-stack-the-vote-do-worse-39913652?siteid=yhoof2&yptr=yahoo
+  Pub:   The Wall Street Journal
+
+  Title: Berkshire and Travelers Bring More Insurance Muscle to Hormuz Strait Plan
+  Link:  https://www.barrons.com/articles/hormuz-strait-shippers-insurance-berkshire-travelers-chubb-75328c7b?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+
+--- TICKER: BAC ---
+  Title: 'Not as bullish': Big banks are entering Q1 earnings season on less certain footing than in January
+  Link:  https://finance.yahoo.com/markets/stocks/article/not-as-bullish-big-banks-are-entering-q1-earnings-season-on-less-certain-footing-than-in-january-120803928.html
+  Pub:   Yahoo Finance
+
+  Title: How The Colgate Palmolive (CL) Investment Story Is Shifting With New Targets And 2030 Plan
+  Link:  https://finance.yahoo.com/markets/stocks/articles/colgate-palmolive-cl-investment-story-191356307.html
+  Pub:   Simply Wall St.
+
+  Title: AI Juggernaut Rumbles on Even as Markets Whipsaw
+  Link:  https://finance.yahoo.com/sectors/technology/articles/ai-juggernaut-rumbles-even-markets-190000638.html
+  Pub:   Bloomberg
+
+  Title: Bank of America sends frank message on next Fed rate cut
+  Link:  https://www.thestreet.com/fed/bank-of-america-sends-frank-message-on-next-fed-rate-cut
+  Pub:   TheStreet
+
+  Title: Global Funds Flee Indian Stocks at Record Pace on Growth Fears
+  Link:  https://finance.yahoo.com/markets/stocks/articles/global-funds-flee-indian-stocks-031305645.html
+  Pub:   Bloomberg
+
+  Title: How The Bank Of America (BAC) Investment Story Is Shifting As Analyst Views Diverge
+  Link:  https://finance.yahoo.com/markets/stocks/articles/bank-america-bac-investment-story-030941576.html
+  Pub:   Simply Wall St.
+
+  Title: Wall Street Banks Try Out Anthropic’s Mythos as US Urges
+  Link:  https://finance.yahoo.com/news/wall-street-banks-try-anthropic-203030964.html
+  Pub:   Bloomberg
+
+  Title: Crypto Ends The Week Higher After U.S.-Iran Ceasefire
+  Link:  https://www.cryptoprowl.com/releases/crypto-ends-the-week-higher-after-us-iran-ceasefire-4132
+  Pub:   CryptoProwl
+
+  Title: 5 To Watch: The Masters Edition & The Business of the Tournament
+  Link:  https://sports.yahoo.com/articles/5-watch-masters-edition-business-212901495.html
+  Pub:   CorpGov.com
+
+  Title: Mark Your Calendar: Oklo Could Be a Very Different Stock After July 4
+  Link:  https://www.fool.com/investing/2026/04/10/mark-your-calendar-oklo-could-be-a-very-different/
+  Pub:   Motley Fool
+
+
+--- TICKER: CVX ---
+  Title: An $18 billion reason to own this 147-year-old dividend stock
+  Link:  https://www.thestreet.com/investing/stocks/a-18-billion-reason-to-own-this-147-year-old-chevron-cvx-dividend-stock
+  Pub:   TheStreet
+
+  Title: Here's What the Futures Markets Are Saying About Oil and the Conflict in the Persian Gulf
+  Link:  https://www.fool.com/investing/2026/04/11/heres-what-the-futures-markets-are-saying-about-oi/
+  Pub:   Motley Fool
+
+  Title: Chevron’s Bandit Oil Find Adds Gulf Project And Feeds Valuation Debate
+  Link:  https://finance.yahoo.com/sectors/energy/articles/chevron-bandit-oil-adds-gulf-211118998.html
+  Pub:   Simply Wall St.
+
+  Title: Insight Wealth Just Bought a $26.9 Million Opening Stake in VPLS
+  Link:  https://www.fool.com/coverage/filings/2026/04/10/insight-wealth-just-bought-a-usd26-9-million-opening-stake-in-vpls/
+  Pub:   Motley Fool
+
+  Title: Chevron Confirms Major Oil Discovery in the Gulf of America
+  Link:  https://finance.yahoo.com/sectors/energy/articles/chevron-confirms-major-oil-discovery-140600862.html
+  Pub:   Zacks
+
+  Title: Every fusion startup that has raised over $100M
+  Link:  https://finance.yahoo.com/sectors/energy/articles/every-fusion-startup-raised-over-153901654.html
+  Pub:   TechCrunch
+
+  Title: Chevron flags multi-billion-dollar hit from Middle East volatility
+  Link:  https://www.proactiveinvestors.com/companies/news/1090376/chevron-flags-multi-billion-dollar-hit-from-middle-east-volatility-1090376.html
+  Pub:   Proactive
+
+  Title: This is Why Chevron Stock Remains a Buy After Its Q1 Outlook
+  Link:  https://finance.yahoo.com/markets/stocks/articles/why-chevron-stock-remains-buy-124900528.html
+  Pub:   Zacks
+
+  Title: Chevron's Quarterly Earnings Preview: What You Need to Know
+  Link:  https://www.barchart.com/story/news/1241312/chevron-s-quarterly-earnings-preview-what-you-need-to-know
+  Pub:   Barchart
+
+  Title: 3 Energy Stocks to Watch Now as LNG Demand Surges
+  Link:  https://www.marketbeat.com/stock-ideas/3-energy-stocks-to-watch-now-as-lng-demand-surges/?utm_source=yahoofinance&utm_medium=yahoofinance
+  Pub:   MarketBeat
+
+
+--- TICKER: KO ---
+  Title: How The Coca-Cola (KO) Investment Story Is Shifting With New Targets And Protein Exposure
+  Link:  https://finance.yahoo.com/markets/stocks/articles/coca-cola-ko-investment-story-200736616.html
+  Pub:   Simply Wall St.
+
+  Title: What Is One of the Best Dividend Stocks to Buy With $5,000 Right Now?
+  Link:  https://www.fool.com/investing/2026/04/11/one-best-dividend-stocks-buy-with-5000-right-now/
+  Pub:   Motley Fool
+
+  Title: Coca-Cola’s Quarterly Earnings Preview: What You Need to Know
+  Link:  https://www.barchart.com/story/news/1254539/coca-colas-quarterly-earnings-preview-what-you-need-to-know
+  Pub:   Barchart
+
+  Title: AJE Eyes Venezuela Rebound As Plant Runs At Just 5%--10% Capacity
+  Link:  https://finance.yahoo.com/economy/articles/aje-eyes-venezuela-rebound-plant-192953625.html
+  Pub:   GuruFocus.com
+
+  Title: Coca-Cola’s America250 Push Links Brand Story To Investor Questions
+  Link:  https://finance.yahoo.com/markets/stocks/articles/coca-cola-america250-push-links-190817119.html
+  Pub:   Simply Wall St.
+
+  Title: Is Warren Buffett Invested in McDonald’s?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/warren-buffett-invested-mcdonald-165608167.html
+  Pub:   GOBankingRates
+
+  Title: Coca-Cola demand trends steady but regional divergence persists ahead of earnings, BofA says
+  Link:  https://www.proactiveinvestors.com/companies/news/1090372/coca-cola-demand-trends-steady-but-regional-divergence-persists-ahead-of-earnings-bofa-says-1090372.html
+  Pub:   Proactive
+
+  Title: Winners And Losers Of Q4: Coca-Cola (NYSE:KO) Vs The Rest Of The Beverages, Alcohol, and Tobacco Stocks
+  Link:  https://finance.yahoo.com/markets/stocks/articles/winners-losers-q4-coca-cola-103044426.html
+  Pub:   StockStory
+
+  Title: Coca-Cola (KO) Outpaces Stock Market Gains: What You Should Know
+  Link:  https://finance.yahoo.com/markets/stocks/articles/coca-cola-ko-outpaces-stock-214504217.html
+  Pub:   Zacks
+
+  Title: Should You Buy Beloved Warren Buffett Stock Coca-Cola Before April 28?
+  Link:  https://www.fool.com/investing/2026/04/09/should-you-buy-beloved-warren-buffett-stock-coca/
+  Pub:   Motley Fool
+
+
+--- TICKER: AXP ---
+  Title: Jim Cramer Suggests American Express for “Exposure to An Affluent Consumer”
+  Link:  https://finance.yahoo.com/markets/stocks/articles/jim-cramer-suggests-american-express-153445258.html
+  Pub:   Insider Monkey
+
+  Title: GDV returned 42% in a year by betting on dividend anchors like JPMorgan and Amex
+  Link:  https://247wallst.com/investing/2026/04/11/gdv-returned-42-in-a-year-by-betting-on-dividend-anchors-like-jpmorgan-and-amex/
+  Pub:   24/7 Wall St.
+
+  Title: Not JPMorgan, Not Bank of America — SoFi Tops Forbes Best Banks List In The US
+  Link:  https://finance.yahoo.com/markets/stocks/articles/not-jpmorgan-not-bank-america-183107967.html
+  Pub:   Benzinga
+
+  Title: Is Warren Buffett Invested in McDonald’s?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/warren-buffett-invested-mcdonald-165608167.html
+  Pub:   GOBankingRates
+
+  Title: The Payments Game is Changing: Is Mastercard Still a Safe Bet?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/payments-game-changing-mastercard-still-161700543.html
+  Pub:   Zacks
+
+  Title: Is American Express (AXP) Still Attractively Priced After Its Recent 30% One-Year Gain?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/american-express-axp-still-attractively-161048737.html
+  Pub:   Simply Wall St.
+
+  Title: Consumer Finance Firms Likely Faced Seasonal Loan Headwinds in First Quarter, RBC Says
+  Link:  https://finance.yahoo.com/markets/stocks/articles/consumer-finance-firms-likely-faced-153430603.html
+  Pub:   MT Newswires
+
+  Title: Can Visa's OwlTing Partnership Accelerate Stablecoin Adoption?
+  Link:  https://finance.yahoo.com/markets/crypto/articles/visas-owlting-partnership-accelerate-stablecoin-144900299.html
+  Pub:   Zacks
+
+  Title: Wells Fargo Lowers AXP Target, Says Consumer Trends Remain Resilient
+  Link:  https://finance.yahoo.com/markets/stocks/articles/wells-fargo-lowers-axp-target-033826170.html
+  Pub:   Insider Monkey
+
+  Title: How Can Visa's Intelligent Commerce Connect Power AI Agents?
+  Link:  https://finance.yahoo.com/markets/stocks/articles/visas-intelligent-commerce-connect-power-161500288.html
+  Pub:   Zacks
+
+
+--- TICKER: JPM ---
+  Title: 'Not as bullish': Big banks are entering Q1 earnings season on less certain footing than in January
+  Link:  https://finance.yahoo.com/markets/stocks/article/not-as-bullish-big-banks-are-entering-q1-earnings-season-on-less-certain-footing-than-in-january-120803928.html
+  Pub:   Yahoo Finance
+
+  Title: Dow Jones Futures Eye Direct U.S.-Iran Talks; Google, Amazon, Nvidia In Buy Areas
+  Link:  https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-iran-talks-earnings-google-amazon-nvidia-buy-areas/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: AI Juggernaut Rumbles on Even as Markets Whipsaw
+  Link:  https://finance.yahoo.com/sectors/technology/articles/ai-juggernaut-rumbles-even-markets-190000638.html
+  Pub:   Bloomberg
+
+  Title: JPMorgan Chase CEO Jamie Dimon Just Issued a Warning to Wall Street. The Famed Banker Sees 3 Big Risks, and They Couldn't Be Any Clearer
+  Link:  https://www.fool.com/investing/2026/04/11/jpmorgan-ceo-jamie-dimon-just-issued-a-warning/
+  Pub:   Motley Fool
+
+  Title: Not All the Signals Are Bearish Under President Donald Trump — Here’s What Bulls Are Watching
+  Link:  https://247wallst.com/investing/2026/04/11/not-all-the-signals-are-bearish-under-president-donald-trump-heres-what-bulls-are-watching/
+  Pub:   24/7 Wall St.
+
+  Title: How The Trip.com Group (NasdaqGS:TCOM) Investment Story Is Shifting With New Risks And Repriced Targets
+  Link:  https://finance.yahoo.com/markets/stocks/articles/trip-com-group-nasdaqgs-tcom-130559739.html
+  Pub:   Simply Wall St.
+
+  Title: Why Monday, April 13 Begins A Critical Week For The Stock Market Rally
+  Link:  https://www.investors.com/research/investing-action-plan/why-monday-april-13-begins-a-critical-week-for-the-stock-market-rally/?src=A00220&yptr=yahoo
+  Pub:   Investor's Business Daily
+
+  Title: JPMorgan Chase's Continued Success Will Hinge On How Quickly It Can Integrate Blockchain, AI, CEO Jamie Dimon Says
+  Link:  https://finance.yahoo.com/sectors/technology/articles/jpmorgan-chases-continued-success-hinge-120113503.html
+  Pub:   Benzinga
+
+  Title: GDV returned 42% in a year by betting on dividend anchors like JPMorgan and Amex
+  Link:  https://247wallst.com/investing/2026/04/11/gdv-returned-42-in-a-year-by-betting-on-dividend-anchors-like-jpmorgan-and-amex/
+  Pub:   24/7 Wall St.
+
+  Title: JPMorgan CEO Jamie Dimon Just Echoed Warren Buffett's Warning From 26 Years Ago
+  Link:  https://www.fool.com/investing/2026/04/11/jpmorgan-ceo-jamie-dimon-just-echoed-warren-buffet/
+  Pub:   Motley Fool
+
+
+--- TICKER: WMT ---
+  Title: How to avoid 2 troubling new retirement trends
+  Link:  https://finance.yahoo.com/video/how-to-avoid-2-troubling-new-retirement-trends-120000616.html
+  Pub:   Yahoo Finance Video
+
+  Title: Amazon vs. Walmart: The Retail War Just Picked a Winner
+  Link:  https://247wallst.com/investing/2026/04/11/amazon-vs-walmart-the-retail-war-just-picked-a-winner/
+  Pub:   24/7 Wall St.
+
+  Title: Why Alphabet is a 'really misunderstood story' for investors
+  Link:  https://finance.yahoo.com/video/why-alphabet-is-a-really-misunderstood-story-for-investors-203147428.html
+  Pub:   Yahoo Finance Video
+
+  Title: Want cheaper groceries? See how prices at Chicago metro stores compare
+  Link:  https://www.pjstar.com/story/business/economy/2026/04/10/consumer-reports-ranks-cheapest-grocery-stores-in-chicago-metro-area-illinois-walmart/89556029007/
+  Pub:   Journal Star
+
+  Title: Retail CEO Changes Really Can Move Stocks. Just Look at Walmart and Target.
+  Link:  https://www.barrons.com/articles/retail-walmart-target-stock-new-ceo-7f4fbd09?siteid=yhoof2&yptr=yahoo
+  Pub:   Barrons.com
+
+  Title: Why PriceSmart’s Discount May Not Last Much Longer
+  Link:  https://www.marketbeat.com/originals/why-pricesmarts-discount-may-not-last-much-longer/?utm_source=yahoofinance&utm_medium=yahoofinance
+  Pub:   MarketBeat
+
+  Title: Walmart Inc. (WMT): Israel Englander Is Bullish on This Retail Giant
+  Link:  https://finance.yahoo.com/markets/stocks/articles/walmart-inc-wmt-israel-englander-142725529.html
+  Pub:   Insider Monkey
+
+  Title: Stock Market News for Apr 10, 2026
+  Link:  https://finance.yahoo.com/markets/stocks/articles/stock-market-news-apr-10-133700739.html
+  Pub:   Zacks
+
+  Title: Investors Heavily Search Walmart Inc. (WMT): Here is What You Need to Know
+  Link:  https://finance.yahoo.com/markets/stocks/articles/investors-heavily-search-walmart-inc-130005967.html
+  Pub:   Zacks
+
+  Title: 2 Supermarket Stocks Well-Positioned to Capitalize on Industry Trends
+  Link:  https://finance.yahoo.com/markets/stocks/articles/2-supermarket-stocks-well-positioned-125700836.html
+  Pub:   Zacks
+
+

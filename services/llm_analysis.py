@@ -30,7 +30,8 @@ def _parse_json(raw: str) -> dict:
 # Per-ticker analysis
 # ---------------------------------------------------------------------------
 def analyze_news_batch(holdings: list[dict], news_batch: list[dict],
-                       profile: dict, macro_news: list[dict] = None) -> list[dict]:
+                       profile: dict, macro_news: list[dict] = None,
+                       movements: dict = None) -> list[dict]:
     api_key = os.getenv("FEATHERLESS_API_KEY")
     if not api_key or api_key == "replace_with_your_featherless_key":
         return mock_fallback(holdings)
@@ -85,6 +86,9 @@ def analyze_news_batch(holdings: list[dict], news_batch: list[dict],
             continue
 
         articles_text = "\n".join(articles[:6])
+        movements = movements or {}
+        price_change = movements.get(ticker, 0.0)
+        movement_ctx = f"Price Movement (last 24-48h): {price_change}%"
 
         position_ctx = ""
         if qty and cost_basis:
@@ -112,6 +116,7 @@ def analyze_news_batch(holdings: list[dict], news_batch: list[dict],
 
 USER CONTEXT:
 - Ticker: {ticker}
+- {movement_ctx}
 - {position_ctx}
 - Risk tolerance: {risk} | Investment horizon: {horizon}
 {source_filter}
@@ -281,7 +286,15 @@ Respond ONLY with raw JSON — no markdown, no preamble:
   "portfolio_impact": "A comprehensive 3-4 paragraph detailed breakdown of how today's macro and company news specifically affects the holdings. Name tickers. Synthesize themes. Use numbers where possible.",
   "key_risk": "One specific, data-driven sentence on the single biggest downside risk appearing in CURRENT news. DO NOT give generic platitudes like 'market shock' or 'volatility'. You MUST name a specific catalyst (e.g., 'escalation in the Iran conflict disrupting the Strait of Hormuz', 'a hotter-than-expected CPI print tomorrow').",
   "opportunity": "One specific sentence on the best opportunity or positive catalyst mentioned in the news. Name the specific ticker or macro event (e.g., 'Alphabet's new TPU v5p chips competing with Nvidia', 'China's PPI return to growth signalling industrial demand').",
-  "portfolio_sentiment": "Bullish" or "Bearish" or "Mixed"
+  "portfolio_sentiment": "Bullish" or "Bearish" or "Mixed",
+  "audio_script": "A short, engaging, highly conversational 3-4 sentence script meant to be spoken out loud. You MUST adopt the persona of 'Alfred' (Batman's dry, aristocratic, hyper-competent and loyal British butler). Greet the user by name with sophisticated deference ('Good morning, [Name]', or similar), state the condition of their portfolio affairs, mention the key catalyst of the day, and close loyally. Write it exactly as it should be spoken.",
+  "macro_exposures": [
+    {{
+      "theme": "Short keyword phrase describing a distinct macro theme in the news (e.g. 'Middle East Conflict', 'Rate Cuts', 'AI Infrastructure')",
+      "affected_tickers": ["TICKER1", "TICKER2"],
+      "impact_direction": "positive" or "negative" or "neutral"
+    }}
+  ]
 }}"""
 
     try:
@@ -314,19 +327,26 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
 
     # 1. Concentration check
     for h in hs:
-        if h.get("weight_pct", 0) > 40:
+        weight = h.get("weight_pct", 0)
+        if weight > 40:
             items.append({
                 "type": "danger",
-                "icon": "⚖️",
-                "title": f"{h['ticker']} is overweight at {h['weight_pct']:.0f}% of portfolio",
-                "sub": "Consider trimming to reduce single-stock concentration risk. Conventional guidance suggests no single position >20–25%."
+                "icon": "",
+                "title": f"Critical Concentration: {h['ticker']}",
+                "technical_desc": f"The position in {h['ticker']} has reached a terminal concentration level of {weight:.1f}% NAV. This creates a dangerous skew where idiosyncratic volatility overpowers systemic trends. In an adverse event specific to {h['ticker']}, the portfolio is mathematically predisposed to catastrophic drawdown regardless of overall market health.",
+                "sub": f"Extreme NAV skew ({weight:.1f}%) requires immediate rebalancing.",
+                "execution_example": f"Liquidate sufficient lots to reduce the effective weight to under 20%. Re-allocate the proceeds into uncorrelated index hedges or cash equivalents to restore the portfolio's risk-parity baseline.",
+                "beginner_tip": "Having too much of one stock is risky. If it drops, your whole portfolio hurts. Diversifying helps spread that risk."
             })
-        elif h.get("weight_pct", 0) > 25:
+        elif weight > 25:
             items.append({
                 "type": "warning",
-                "icon": "📊",
-                "title": f"{h['ticker']} is {h['weight_pct']:.0f}% of portfolio — watch sizing",
-                "sub": "Position is getting large. If this thesis breaks, it will meaningfully hurt returns."
+                "icon": "",
+                "title": f"Elevated Position Sizing: {h['ticker']}",
+                "technical_desc": f"With a {weight:.1f}% allocation, {h['ticker']} is approaching the threshold where its beta dominates the portfolio's directional movement. Sustained exposure at this level requires high conviction in secular outperformance; otherwise, the risk-adjusted return profile begins to degrade due to lack of asset orthogonality.",
+                "sub": f"Monitoring {h['ticker']} for potential 'whale' risk at {weight:.1f}% weight.",
+                "execution_example": f"Implement a scaling-out strategy: trim 15-20% of the current position to capture realized gains, or utilize out-of-the-money protective puts to cap downside tail-risk without triggering a taxable event.",
+                "beginner_tip": "This stock is becoming a large part of your portfolio. It's wise to keep an eye on it to make sure it doesn't get too big."
             })
 
     # 2. Sector concentration
@@ -335,9 +355,12 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         if sector not in ("Unknown", "Crypto") and pct > 55:
             items.append({
                 "type": "warning",
-                "icon": "🏭",
-                "title": f"High sector concentration — {sector} is {pct:.0f}% of portfolio",
-                "sub": "Sector-specific shocks (regulation, commodity prices, rate sensitivity) could hit your portfolio hard. Consider adding exposure to other sectors."
+                "icon": "",
+                "title": f"Structural Sector Saturation: {sector}",
+                "technical_desc": f"The portfolio currently exhibits a high degree of thematic clustering in {sector} ({pct:.0f}%). This lack of sector-level diversification exposes the capital base to 'black swan' regulatory changes, interest rate sensitivities, or supply chain shocks unique to the {sector} vertical.",
+                "sub": f"High thematic clustering in {sector} creates structural vulnerability.",
+                "execution_example": f"Execute a capital rotation out of the most overextended {sector} names and into 'orthogonally' positioned sectors like Healthcare (XLV) or Consumer Staples (XLP) to achieve a more robust diversification factor.",
+                "beginner_tip": "You have a lot of stocks in one industry. If that industry has a bad day, most of your stocks will go down together."
             })
 
     # 3. Sharpe ratio
@@ -346,67 +369,92 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         if sharpe < 0:
             items.append({
                 "type": "danger",
-                "icon": "📉",
-                "title": f"Portfolio Sharpe ratio is negative ({sharpe})",
-                "sub": "You are bearing risk without being compensated with returns vs the risk-free rate. Review your highest-volatility positions."
+                "icon": "",
+                "title": "Sub-Optimal Risk-Adjusted Returns",
+                "technical_desc": f"The portfolio is currently operating with a negative Sharpe Ratio ({sharpe}). This indicates that the realized returns are not only failing to beat the risk-free rate, but that the investor is paying for high volatility without any associated alpha. The portfolio is essentially 'bleeding' without compensated risk.",
+                "sub": f"Inefficient risk-capture detected (Sharpe {sharpe}).",
+                "execution_example": "Perform a rigorous audit of high-volatility speculative positions. Rotate equity into defensive anchors or short-duration treasuries to stabilize the equity curve until market conditions or internal thesis aligns.",
+                "beginner_tip": "Your portfolio is currently very 'bumpy' for the amount of profit you're making. You might be taking too much risk for the return."
             })
         elif sharpe < 0.5:
             items.append({
                 "type": "warning",
-                "icon": "📉",
-                "title": f"Low risk-adjusted returns — Sharpe of {sharpe}",
-                "sub": "A Sharpe below 0.5 means returns are poor relative to the volatility you're taking on. The S&P 500 historically runs ~0.5–1.0."
+                "icon": "",
+                "title": "Low Portfolio Efficiency Index",
+                "technical_desc": f"A Sharpe of {sharpe} suggests that the yield-per-unit-of-risk is significantly lower than institutional benchmarks (typically 0.7 - 1.2). The portfolio is likely over-leveraged in momentum-driven assets with high standard deviations that lack corresponding directional strength.",
+                "sub": f"Yield-per-unit-risk ({sharpe}) lags historical market averages.",
+                "execution_example": "Optimize the 'Efficient Frontier' of the portfolio by reducing the weight of high-variance assets and increasing exposure to low-correlation instruments like dividends or fixed-income ETFs.",
+                "beginner_tip": "Efficiency is key. You want to make the most money possible while keeping the ups-and-downs manageable."
             })
         elif sharpe > 1.5:
             items.append({
                 "type": "success",
-                "icon": "🌟",
-                "title": f"Strong risk-adjusted returns — Sharpe of {sharpe}",
-                "sub": "Excellent! This means you're generating good returns per unit of risk. Keep this portfolio composition in mind."
+                "icon": "",
+                "title": "Alpha-Dominant Risk Profile",
+                "technical_desc": f"The portfolio is exhibiting a superior Sharpe Ratio of {sharpe}. This level of performance indicates a disciplined selection of assets that deliver high returns with exceptionally controlled volatility—outperforming standard systematic returns on a risk-adjusted basis.",
+                "sub": f"Exceptional risk-adjusted performance (Sharpe {sharpe}).",
+                "execution_example": "The current allocation is highly efficient. Avoid reflexive rebalancing that takes capital away from winning themes; instead, increase the stop-loss thresholds to lock in gains without exiting the secular trend.",
+                "beginner_tip": "Great job! This means your investments are working well together to give you smooth, consistent returns."
             })
 
-    # 4. Missing sector exposure (simple heuristic)
+    # 4. Missing sector exposure (expansion)
     covered_sectors = set(s.lower() for s in sectors.keys())
     if not any("energy" in s or "utilities" in s for s in covered_sectors):
         items.append({
             "type": "info",
-            "icon": "💡",
-            "title": "No energy or utilities exposure",
-            "sub": "Energy and utilities can act as inflation hedges and reduce correlation to tech/growth stocks. Consider adding XLE (Energy ETF) or XLU (Utilities ETF)."
+            "icon": "",
+            "title": "Expansion: Secular Inflation Hedge",
+            "technical_desc": "The portfolio lacks exposure to the 'Energy and Utilities' vertical, which serves as a critical macro-hedge during inflationary cycles. These assets often generate free cash flow that is uncorrelated with growth-oriented consumer tech, providing a 'hard asset' floor to the NAV.",
+            "sub": "Lacking core inflation/commodity hedges in current mix.",
+            "execution_example": "Allocate 7-10% into XLE (Energy SPDR) or specialized midstream companies to capture elevated energy commodity pricing without excessive direct oil-price delta.",
+            "beginner_tip": "Energy and Utility companies often stay steady or go up when other stocks go down, helping balance your portfolio."
         })
     if not any("health" in s for s in covered_sectors):
         items.append({
             "type": "info",
-            "icon": "💡",
-            "title": "No healthcare exposure",
-            "sub": "Healthcare is defensive in downturns and benefits from demographic tailwinds. Consider XLV or individual pharma/biotech exposure."
+            "icon": "",
+            "title": "Expansion: Defensive Biotech & Pharma Anchor",
+            "technical_desc": "Zero healthcare exposure creates a vulnerability to 'risk-off' market environments. Healthcare as a sector is characterized by inelastic demand and strong balance sheets, acting as a defensive 'flywheel' that provides liquidity and stability when cyclical sectors rotate lower.",
+            "sub": "Zero exposure to defensive healthcare buffer.",
+            "execution_example": "Build a tiered entry into XLV (Healthcare ETF) or deep-value biosciences. Aim for a 5-8% weighting to lower the aggregate portfolio beta (sensitivity) to market-wide volatility.",
+            "beginner_tip": "Healthcare is considered 'defensive' because people need it regardless of how the economy is doing, making it a safe choice."
         })
 
     # 5. Underwater positions
     for h in hs:
-        if h.get("gain_pct", 0) < -20 and h.get("qty", 0):
+        gain_pct = h.get("gain_pct", 0)
+        if gain_pct < -20 and h.get("qty", 0):
             items.append({
                 "type": "warning",
-                "icon": "🔴",
-                "title": f"{h['ticker']} is down {abs(h['gain_pct']):.1f}% from your cost basis",
-                "sub": f"At ${h.get('current_price','?'):.2f} vs your avg cost of ${h.get('cost_basis','?'):.2f}. Evaluate whether the original thesis still holds, or if this is a tax-loss harvesting opportunity."
+                "icon": "",
+                "title": f"Strategic Stop-Loss Review: {h['ticker']}",
+                "technical_desc": f"The position in {h['ticker']} is currently in a deep technical drawdown of {abs(gain_pct):.1f}%. If the original fundamental narrative for this asset has changed, the capital is currently being wasted in a 'dead money' position that incurs significant opportunity cost.",
+                "sub": f"{h['ticker']} drawdown ({abs(gain_pct):.1f}%) warrants immediate thesis validation.",
+                "execution_example": "Evaluate the asset's distance from its 200-day moving average. If it remains below resistance, execute a tax-loss harvesting sell to offset realized capital gains elsewhere in the portfolio.",
+                "beginner_tip": "This stock has lost quite a bit of value. It's a good time to decide if you still believe in it or if it's better to move on."
             })
 
-    # 6. No diversification
+    # 6. Diversification Minimums
     if len(holdings) < 3:
         items.append({
             "type": "info",
-            "icon": "🎯",
-            "title": "Portfolio has fewer than 3 holdings",
-            "sub": "Concentration in 1–2 names dramatically increases volatility. Even adding 2–3 uncorrelated positions can reduce overall portfolio risk significantly."
+            "icon": "",
+            "title": "Expansion: Structural Diversification Floor",
+            "technical_desc": "With fewer than 3 holdings, the portfolio is effectively 'binary'—reliant on single-event outcomes. Modern Portfolio Theory suggests that the most efficient risk reduction occurs when moving from 1 to 15 holdings, drastically reducing the impact of any single asset's failure.",
+            "sub": "Concentration risk is at an absolute maximum with <3 assets.",
+            "execution_example": "Immediately prioritize capital expansion into uncorrelated asset classes. Aim to reach a baseline of 5-8 foundational holdings across Tech, Healthcare, Resources, and Fixed-Income vectors.",
+            "beginner_tip": "Starting with at least 3-5 different stocks is better than just 1 or 2. It's the simplest way to protect yourself from big losses."
         })
 
     if not items:
         items.append({
             "type": "success",
-            "icon": "✅",
-            "title": "Portfolio looks well-structured",
-            "sub": "No major red flags detected. Continue monitoring key positions and macro conditions."
+            "icon": "",
+            "title": "Institutional-Grade Allocation",
+            "technical_desc": "The portfolio currently meets the 'Heimdall Standard' for risk-parity and sector distribution. Momentum, volatility, and diversification factors are harmonized to capture systematic growth while mitigating tail-risk events.",
+            "sub": "Current metrics align with best-in-class allocation standards.",
+            "execution_example": "No tactical interventions required. Sustain current positioning and monitor technical support levels to ensure the portfolio remains on the efficient frontier.",
+            "beginner_tip": "Everything looks good! Your portfolio is well-balanced and safe for now."
         })
 
     return items

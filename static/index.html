@@ -9,36 +9,53 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="auth-loading">
+
+<!-- ======================== LOGIN OVERLAY ========================= -->
+<div id="login-screen" class="hidden">
+    <div class="login-container">
+        <div class="logo large"><span class="logo-icon"></span><span>Heimdall</span></div>
+        <h1>Portfolio Intelligence</h1>
+        <p>Log in to access your personalized market insights and portfolio analytics.</p>
+        <button id="login-btn" class="action-btn primary glow large">Sign In with Auth0</button>
+    </div>
+</div>
+
+<!-- ======================== AUTH LOADING ========================== -->
+<div id="auth-loading-screen">
+    <div class="spinner-large"></div>
+</div>
 
 <!-- ============================= SIDEBAR ============================= -->
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar hidden" id="sidebar">
     <div class="sidebar-header">
-        <div class="logo"><span class="logo-icon">⚡</span><span>Heimdall</span></div>
+        <div class="logo"><span class="logo-icon"></span><span>Heimdall</span></div>
         <button class="sidebar-close" id="sidebar-close" aria-label="Close">&times;</button>
     </div>
 
     <nav class="sidebar-nav">
-        <button class="nav-item active" data-tab="brief"     id="nav-brief">     <span class="nav-icon">📰</span> Morning Brief</button>
-        <button class="nav-item"        data-tab="analytics" id="nav-analytics"> <span class="nav-icon">📊</span> Analytics</button>
-        <button class="nav-item"        data-tab="actions"   id="nav-actions">   <span class="nav-icon">⚡</span> Action Items</button>
-        <button class="nav-item"        data-tab="portfolio" id="nav-portfolio"> <span class="nav-icon">💼</span> Portfolio</button>
+        <button class="nav-item active" data-tab="brief"     id="nav-brief">     <span class="nav-icon"></span> Morning Brief</button>
+        <button class="nav-item"        data-tab="analytics" id="nav-analytics"> <span class="nav-icon"></span> Analytics</button>
+        <button class="nav-item"        data-tab="actions"   id="nav-actions">   <span class="nav-icon"></span> Action Items</button>
+        <button class="nav-item"        data-tab="portfolio" id="nav-portfolio"> <span class="nav-icon"></span> Portfolio</button>
     </nav>
 
     <div class="sidebar-footer">
         <button class="profile-btn" id="profile-btn">
+            <img class="avatar" id="profile-avatar-img" src="" alt="Avatar" style="display:none;"/>
             <span class="avatar" id="profile-avatar">?</span>
             <div class="profile-meta">
                 <span class="profile-name" id="profile-name-display">Set up profile</span>
                 <span class="profile-sub"  id="profile-risk-display">–</span>
             </div>
-            <span class="edit-icon">✏️</span>
+            <span class="edit-icon"></span>
         </button>
+        <button class="logout-link" id="logout-btn">Sign Out</button>
     </div>
 </aside>
 
 <!-- ============================ TOP BAR ============================= -->
-<div class="layout">
+<div class="layout hidden" id="main-layout">
     <header class="topbar">
         <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
         <div class="topbar-title" id="page-title">Morning Brief</div>
@@ -51,7 +68,7 @@
         <section class="tab-panel active" id="tab-brief">
             <div class="section-actions">
                 <button class="action-btn primary glow" id="generate-btn">
-                    <span class="btn-text">✨ Generate Brief</span>
+                    <span class="btn-text">Generate Brief</span>
                     <span class="spinner hidden" id="brief-spinner"></span>
                 </button>
             </div>
@@ -73,7 +90,7 @@
         <section class="tab-panel" id="tab-analytics">
             <div class="section-actions">
                 <button class="action-btn secondary" id="refresh-analytics-btn">
-                    <span class="btn-text">↻ Refresh Analytics</span>
+                    <span class="btn-text">Refresh Analytics</span>
                     <span class="spinner hidden" id="analytics-spinner"></span>
                 </button>
             </div>
@@ -90,7 +107,7 @@
         <section class="tab-panel" id="tab-actions">
             <div class="section-actions">
                 <button class="action-btn secondary" id="refresh-actions-btn">
-                    <span class="btn-text">↻ Refresh Suggestions</span>
+                    <span class="btn-text">Refresh Suggestions</span>
                     <span class="spinner hidden" id="actions-spinner"></span>
                 </button>
             </div>
@@ -106,8 +123,31 @@
         <!-- ——— PORTFOLIO TAB ——— -->
         <section class="tab-panel" id="tab-portfolio">
             <div class="portfolio-mgmt">
+                <div class="mgmt-card brokerage-card">
+                    <div class="card-header-flex">
+                        <h3 class="card-title">Brokerage Connection</h3>
+                        <div id="snaptrade-status-badge" class="status-badge disconnected">Disconnected</div>
+                    </div>
+                    <p class="card-desc">Securely sync your real-time holdings via SnapTrade.</p>
+                    <div id="snaptrade-disconnected-view">
+                        <button id="snaptrade-connect-btn" class="action-btn primary full-width">Connect Brokerage</button>
+                    </div>
+                    <div id="snaptrade-connected-view" class="hidden">
+                        <div class="connection-meta">
+                            <span class="st-user-label">User:</span> <span id="st-user-id" class="st-user-val">—</span>
+                        </div>
+                        <div class="mgmt-actions">
+                            <button id="snaptrade-sync-btn" class="action-btn secondary">
+                                <span class="btn-text">Sync Now</span>
+                                <span class="spinner hidden" id="snaptrade-spinner"></span>
+                            </button>
+                            <button id="snaptrade-disconnect-btn" class="link-btn danger">Disconnect</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mgmt-card">
-                    <h3 class="card-title">📋 Manual Entry</h3>
+                    <h3 class="card-title">Manual Entry</h3>
                     <form id="add-holding-form" class="holding-form">
                         <div class="form-row">
                             <div class="form-group">
@@ -128,11 +168,11 @@
                 </div>
 
                 <div class="mgmt-card">
-                    <h3 class="card-title">📁 Import CSV</h3>
+                    <h3 class="card-title">Import CSV</h3>
                     <p class="card-desc">Columns: <code>ticker</code>, <code>qty</code>, <code>cost_basis</code></p>
                     <div class="csv-drop-zone" id="csv-drop-zone">
                         <input type="file" id="csv-file-input" accept=".csv" hidden/>
-                        <span class="drop-icon">📂</span>
+                        <span class="drop-icon"></span>
                         <p>Drag & drop or <button class="link-btn" id="csv-browse-btn">browse</button></p>
                         <p class="drop-hint">Supports Robinhood, custom CSV exports</p>
                     </div>
@@ -197,6 +237,21 @@
     </div>
 </div>
 
+<!-- Auth0 SDK -->
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+<!-- Auth Helper -->
+<script src="auth.js"></script>
+<!-- App Logic -->
+<script>
+    window.onerror = function(msg, url, line) {
+        console.error("Global error:", msg, "at", url, ":", line);
+    };
+    if (typeof auth0 === 'undefined') {
+        console.error("Auth0 SDK failed to load from CDN.");
+    } else {
+        console.log("Auth0 SDK loaded successfully.");
+    }
+</script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heimdall – Portfolio Intelligence</title>
+    <meta name="description" content="AI-powered personalized portfolio intelligence. Cut through the noise and get actionable insight on your positions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================= SIDEBAR ============================= -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo"><span class="logo-icon">⚡</span><span>Heimdall</span></div>
+        <button class="sidebar-close" id="sidebar-close" aria-label="Close">&times;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="brief"     id="nav-brief">     <span class="nav-icon"></span> Morning Brief</button>
+        <button class="nav-item"        data-tab="analytics" id="nav-analytics"> <span class="nav-icon"></span> Analytics</button>
+        <button class="nav-item"        data-tab="actions"   id="nav-actions">   <span class="nav-icon"></span> Action Items</button>
+        <button class="nav-item"        data-tab="portfolio" id="nav-portfolio"> <span class="nav-icon"></span> Portfolio</button>
+    </nav>
+
+    <div class="sidebar-footer">
+        <button class="profile-btn" id="profile-btn">
+            <span class="avatar" id="profile-avatar">?</span>
+            <div class="profile-meta">
+                <span class="profile-name" id="profile-name-display">Set up profile</span>
+                <span class="profile-sub"  id="profile-risk-display">–</span>
+            </div>
+            <span class="edit-icon"></span>
+        </button>
+    </div>
+</aside>
+
+<!-- ============================ TOP BAR ============================= -->
+<div class="layout">
+    <header class="topbar">
+        <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
+        <div class="topbar-title" id="page-title">Morning Brief</div>
+        <div class="topbar-date" id="current-date"></div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- ——— BRIEF TAB ——— -->
+        <section class="tab-panel active" id="tab-brief">
+            <div class="section-actions">
+                <button class="action-btn primary glow" id="generate-btn">
+                    <span class="btn-text">Generate Brief</span>
+                    <span class="spinner hidden" id="brief-spinner"></span>
+                </button>
+            </div>
+
+            <!-- Overall brief hero (hidden until generated) -->
+            <div id="overall-brief-wrap" class="hidden"></div>
+
+            <!-- Per-ticker cards -->
+            <div id="brief-container" class="brief-container">
+                <div class="empty-state">
+                    <div class="empty-glow"></div>
+                    <h2>Your intelligence feed is empty</h2>
+                    <p>Add holdings in the Portfolio tab, then generate your Morning Brief.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ——— ANALYTICS TAB ——— -->
+        <section class="tab-panel" id="tab-analytics">
+            <div class="section-actions">
+                <button class="action-btn secondary" id="refresh-analytics-btn">
+                    <span class="btn-text">↻ Refresh Analytics</span>
+                    <span class="spinner hidden" id="analytics-spinner"></span>
+                </button>
+            </div>
+            <div id="analytics-container">
+                <div class="empty-state">
+                    <div class="empty-glow"></div>
+                    <h2>No analytics yet</h2>
+                    <p>Add holdings and click Refresh Analytics.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ——— ACTIONS TAB ——— -->
+        <section class="tab-panel" id="tab-actions">
+            <div class="section-actions">
+                <button class="action-btn secondary" id="refresh-actions-btn">
+                    <span class="btn-text">↻ Refresh Suggestions</span>
+                    <span class="spinner hidden" id="actions-spinner"></span>
+                </button>
+            </div>
+            <div id="actions-container">
+                <div class="empty-state">
+                    <div class="empty-glow"></div>
+                    <h2>No suggestions yet</h2>
+                    <p>Add holdings and click Refresh to see personalized action items.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ——— PORTFOLIO TAB ——— -->
+        <section class="tab-panel" id="tab-portfolio">
+            <div class="portfolio-mgmt">
+                <div class="mgmt-card">
+                    <h3 class="card-title">📋 Manual Entry</h3>
+                    <form id="add-holding-form" class="holding-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ticker-input">Ticker</label>
+                                <input type="text" id="ticker-input" placeholder="e.g. AAPL" autocomplete="off"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="qty-input">Quantity</label>
+                                <input type="number" id="qty-input" placeholder="e.g. 10" min="0" step="any"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="cost-input">Avg Cost ($)</label>
+                                <input type="number" id="cost-input" placeholder="e.g. 175.00" min="0" step="any"/>
+                            </div>
+                            <button type="submit" class="action-btn primary">+ Add</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="mgmt-card">
+                    <h3 class="card-title">📁 Import CSV</h3>
+                    <p class="card-desc">Columns: <code>ticker</code>, <code>qty</code>, <code>cost_basis</code></p>
+                    <div class="csv-drop-zone" id="csv-drop-zone">
+                        <input type="file" id="csv-file-input" accept=".csv" hidden/>
+                        <span class="drop-icon">📂</span>
+                        <p>Drag & drop or <button class="link-btn" id="csv-browse-btn">browse</button></p>
+                        <p class="drop-hint">Supports Robinhood, custom CSV exports</p>
+                    </div>
+                    <div id="csv-status" class="csv-status hidden"></div>
+                </div>
+            </div>
+
+            <div class="holdings-table-wrap">
+                <h3 class="table-heading">Current Holdings</h3>
+                <div id="holdings-empty" class="holdings-empty hidden">No holdings yet.</div>
+                <table class="holdings-table" id="holdings-table">
+                    <thead><tr><th>Ticker</th><th>Qty</th><th>Avg Cost</th><th></th></tr></thead>
+                    <tbody id="holdings-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- ======================== PROFILE MODAL ========================= -->
+<div class="modal-overlay hidden" id="profile-modal-overlay">
+    <div class="modal" id="profile-modal">
+        <div class="modal-header">
+            <h2>Your Profile</h2>
+            <button class="modal-close" id="profile-modal-close">&times;</button>
+        </div>
+        <form id="profile-form" class="profile-form">
+            <div class="form-group">
+                <label for="profile-name">Name</label>
+                <input type="text" id="profile-name" placeholder="e.g. Alex" autocomplete="off"/>
+            </div>
+            <div class="form-group">
+                <label for="profile-risk">Risk Tolerance</label>
+                <select id="profile-risk">
+                    <option>Conservative</option>
+                    <option selected>Moderate</option>
+                    <option>Aggressive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="profile-horizon">Investment Horizon</label>
+                <select id="profile-horizon">
+                    <option>Short-term (&lt;1yr)</option>
+                    <option selected>Long-term</option>
+                    <option>Retirement</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Focus Areas</label>
+                <div class="focus-chips" id="focus-chips">
+                    <button type="button" class="chip" data-val="tech">Tech</button>
+                    <button type="button" class="chip" data-val="crypto">Crypto</button>
+                    <button type="button" class="chip" data-val="energy">Energy</button>
+                    <button type="button" class="chip" data-val="healthcare">Healthcare</button>
+                    <button type="button" class="chip" data-val="finance">Finance</button>
+                    <button type="button" class="chip" data-val="macro">Macro</button>
+                </div>
+            </div>
+            <button type="submit" class="action-btn primary full-width">Save Profile</button>
+        </form>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

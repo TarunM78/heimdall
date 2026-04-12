@@ -13,6 +13,18 @@ let tabs = {}; // populated after DOM ready
 /* ---- DOM ---- */
 const $ = id => document.getElementById(id);
 
+/**
+ * AUTHORIZED FETCH WRAPPER
+ */
+async function fetchAuthorized(url, options = {}) {
+    const token = await getToken();
+    const headers = {
+        ...options.headers,
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
+    return fetch(url, { ...options, headers });
+}
+
 /* =====================================================
    TOOLTIPS for financial terms
    ===================================================== */
@@ -36,7 +48,30 @@ const TIPS = {
    INIT
    ===================================================== */
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize tabs AFTER DOM is ready
+    // 1. Initialize Auth0
+    const client = await initAuth();
+    if (!client) {
+        alert("Auth0 failed to initialize. Check console.");
+        return;
+    }
+
+    const authenticated = await isAuthenticated();
+    
+    // Toggle screens based on auth status
+    document.body.classList.remove('auth-loading');
+    $('auth-loading-screen').classList.add('hidden');
+
+    $('login-btn').addEventListener('click', login);
+    $('logout-btn').addEventListener('click', logout);
+
+    if (!authenticated) {
+        showLogin();
+        return;
+    }
+
+    showApp();
+
+    // 2. Setup standard UI
     tabs.brief = { nav: $('nav-brief'), panel: $('tab-brief') };
     tabs.analytics = { nav: $('nav-analytics'), panel: $('tab-analytics') };
     tabs.actions = { nav: $('nav-actions'), panel: $('tab-actions') };
@@ -45,7 +80,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('current-date').textContent = new Date().toLocaleDateString('en-US', {
         weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
     });
+
+    // 3. Load user data
+    const user = await getUser();
+    updateProfileDisplay(user);
+
     await Promise.all([loadPortfolio(), loadProfile()]);
+    
+    // 4. Setup listeners
     setupNav();
     setupPortfolioForm();
     setupCSV();
@@ -54,7 +96,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupAnalytics();
     setupActions();
     setupSidebar();
+    setupSnapTrade();
 });
+
+function showLogin() {
+    $('login-screen').classList.remove('hidden');
+    $('sidebar').classList.add('hidden');
+    $('main-layout').classList.add('hidden');
+}
+
+function showApp() {
+    $('login-screen').classList.add('hidden');
+    $('sidebar').classList.remove('hidden');
+    $('main-layout').classList.remove('hidden');
+}
+
+function updateProfileDisplay(user) {
+    if (!user) return;
+    const name = user.name || user.nickname || 'User';
+    $('profile-name-display').textContent = name;
+    
+    if (user.picture) {
+        $('profile-avatar-img').src = user.picture;
+        $('profile-avatar-img').style.display = 'block';
+        $('profile-avatar').style.display = 'none';
+    } else {
+        $('profile-avatar').textContent = name[0].toUpperCase();
+    }
+}
 
 /* =====================================================
    NAVIGATION
@@ -90,7 +159,7 @@ function setupSidebar() {
    ===================================================== */
 async function loadPortfolio() {
     try {
-        const res = await fetch(`${API}/api/portfolio`);
+        const res = await fetchAuthorized(`${API}/api/portfolio`);
         const data = await res.json();
         holdings = data.holdings || [];
         renderHoldingsTable();
@@ -98,7 +167,7 @@ async function loadPortfolio() {
 }
 
 async function savePortfolio() {
-    await fetch(`${API}/api/portfolio`, {
+    await fetchAuthorized(`${API}/api/portfolio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ holdings })
@@ -171,7 +240,7 @@ function setupCSV() {
         const form = new FormData();
         form.append('file', file);
         try {
-            const res = await fetch(`${API}/api/portfolio/csv`, { method: 'POST', body: form });
+            const res = await fetchAuthorized(`${API}/api/portfolio/csv`, { method: 'POST', body: form });
             const data = await res.json();
             if (res.ok) { holdings = data.holdings || []; renderHoldingsTable(); showCSVStatus(`✓ Imported ${data.count} holdings`, 'ok'); }
             else showCSVStatus(`✗ ${data.detail || 'Import failed'}`, 'err');
@@ -190,7 +259,7 @@ function setupCSV() {
    PROFILE
    ===================================================== */
 async function loadProfile() {
-    try { const res = await fetch(`${API}/api/profile`); profile = await res.json(); applyProfileToUI(); }
+    try { const res = await fetchAuthorized(`${API}/api/profile`); profile = await res.json(); applyProfileToUI(); }
     catch (e) { console.error('loadProfile', e); }
 }
 
@@ -216,7 +285,7 @@ function setupProfile() {
         e.preventDefault();
         const focus = [...document.querySelectorAll('.chip.active')].map(c => c.dataset.val);
         const payload = { name: $('profile-name').value.trim(), risk_tolerance: $('profile-risk').value, investment_horizon: $('profile-horizon').value, focus };
-        await fetch(`${API}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        await fetchAuthorized(`${API}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         profile = payload;
         applyProfileToUI();
         overlay.classList.add('hidden');
@@ -253,15 +322,68 @@ async function generateBrief() {
     try {
         // Fire both requests in parallel
         const [briefRes, overallRes] = await Promise.all([
-            fetch(`${API}/api/brief`),
-            fetch(`${API}/api/overall_brief`),
+            fetchAuthorized(`${API}/api/brief`),
+            fetchAuthorized(`${API}/api/overall_brief`),
         ]);
 
-        const [briefData, overallData] = await Promise.all([briefRes.json(), overallRes.json()]);
+        let briefData;
+        if (!briefRes.ok) {
+            const err = await briefRes.json();
+            throw new Error(err.detail || 'Failed to fetch brief');
+        } else {
+            briefData = await briefRes.json();
+        }
+
+        let overallData;
+        if (!overallRes.ok) {
+            try {
+                const err = await overallRes.json();
+                console.warn('Overall brief failed:', err);
+            } catch (e) {}
+            overallData = { bluf: null }; // Fallback safe object
+        } else {
+            overallData = await overallRes.json();
+        }
 
         // Render overall brief hero
         if (overallData && overallData.bluf) {
             overallWrap.innerHTML = buildOverallBriefCard(overallData);
+            const playBtn = document.getElementById('play-brief-btn');
+            if (playBtn) {
+                let currentAudio = null;
+                playBtn.addEventListener('click', async () => {
+                    if (currentAudio) {
+                        if (currentAudio.paused) currentAudio.play();
+                        else currentAudio.pause();
+                        playBtn.innerHTML = currentAudio.paused ? '🔊 Play Audio' : '⏸ Pause Audio';
+                        return;
+                    }
+                    playBtn.textContent = 'Loading...';
+                    playBtn.disabled = true;
+                    try {
+                        const fallbackGreeting = profile.name ? `Good morning, ${profile.name}. ` : 'Good morning. ';
+                        const fallbackText = `${fallbackGreeting}${overallData.bluf}. ${overallData.macro_environment || ''}`;
+                        const textToRead = (overallData.audio_script || fallbackText).replace(/\*/g, '');
+                        
+                        const ttsRes = await fetchAuthorized(`${API}/api/tts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: textToRead })
+                        });
+                        if (!ttsRes.ok) throw new Error(await ttsRes.text());
+                        const blob = await ttsRes.blob();
+                        currentAudio = new Audio(URL.createObjectURL(blob));
+                        currentAudio.onended = () => { playBtn.innerHTML = '🔊 Play Audio'; };
+                        currentAudio.play();
+                        playBtn.innerHTML = '⏸ Pause Audio';
+                    } catch (err) {
+                        alert('Audio generation failed: ' + err.message);
+                        playBtn.innerHTML = '🔊 Play Audio';
+                    } finally {
+                        playBtn.disabled = false;
+                    }
+                });
+            }
         } else {
             overallWrap.classList.add('hidden');
         }
@@ -277,10 +399,80 @@ async function generateBrief() {
         console.error(e);
         cont.innerHTML = `<div class="empty-state"><p style="color:var(--bearish)">Error generating brief. Check server logs.</p></div>`;
     } finally {
-        btnText.textContent = '✨ Generate Brief';
+        btnText.textContent = 'Generate Brief';
         spinner.classList.add('hidden');
         btn.disabled = false;
     }
+}
+
+/* ---- Entity Exposure Network (Macro Web) ---- */
+function buildMacroWeb(exposures) {
+    if (!exposures || !exposures.length) return '';
+    
+    const themes = exposures.map(e => e.theme);
+    const affectedT = new Set();
+    exposures.forEach(e => (e.affected_tickers||[]).forEach(t => affectedT.add(t)));
+    const tickers = Array.from(affectedT);
+    
+    const H = Math.max(160, Math.max(themes.length, tickers.length) * 40);
+    const W = 460;
+    
+    const themePitch = H / (themes.length + 1);
+    const tickerPitch = H / (tickers.length + 1);
+    
+    const lx = 160; 
+    const rx = W - 100;
+    
+    let edges = '';
+    let nodesHtml = '';
+    
+    exposures.forEach((exp, i) => {
+        const ty = (i + 1) * themePitch;
+        nodesHtml += `
+            <div style="position:absolute; left:10px; top:${ty - 10}px; 
+                        width: ${lx - 25}px; text-align:right; 
+                        font-size:0.75rem; color:var(--text-1); font-weight:600;
+                        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${exp.theme}">
+                ${exp.theme}
+            </div>
+            <div class="macro-node" style="left:${lx-4}px; top:${ty-4}px; background:var(--text-1)"></div>
+        `;
+        
+        (exp.affected_tickers||[]).forEach(t => {
+            const j = tickers.indexOf(t);
+            if (j === -1) return;
+            const rty = (j + 1) * tickerPitch;
+            const color = exp.impact_direction === 'positive' ? 'var(--bullish)' 
+                        : exp.impact_direction === 'negative' ? 'var(--bearish)' 
+                        : 'var(--text-3)';
+            edges += `<path d="M ${lx} ${ty} C ${lx + 80} ${ty}, ${rx - 80} ${rty}, ${rx} ${rty}" 
+                            fill="none" stroke="${color}" stroke-width="1.5" opacity="0.6"/>`;
+        });
+    });
+    
+    tickers.forEach((t, j) => {
+        const y = (j + 1) * tickerPitch;
+        nodesHtml += `
+            <div class="macro-node" style="left:${rx-4}px; top:${y-4}px;"></div>
+            <div style="position:absolute; left:${rx + 12}px; top:${y - 8}px; 
+                        font-size:0.75rem; color:var(--text-2); font-weight:600;">
+                ${t}
+            </div>
+        `;
+    });
+    
+    return `
+    <div class="brief-article-section" style="margin-top:1.5rem;">
+        <div class="brief-article-label">Entity Exposure Network</div>
+        <div style="position:relative; width:100%; max-width:${W}px; height:${H}px; overflow-x:auto;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; width:${W}px; height:${H}px; pointer-events:none;">
+                ${edges}
+            </svg>
+            <div style="position:absolute; left:0; top:0; width:${W}px; height:${H}px; pointer-events:none;">
+                ${nodesHtml}
+            </div>
+        </div>
+    </div>`;
 }
 
 function buildOverallBriefCard(data) {
@@ -293,7 +485,7 @@ function buildOverallBriefCard(data) {
     if (data.macro_environment) {
         sections.push(`
             <div class="brief-article-section">
-                <div class="brief-article-label">🌍 Macro &amp; Geopolitics</div>
+                <div class="brief-article-label">Macro & Geopolitics</div>
                 <p class="brief-article-body">${data.macro_environment}</p>
             </div>`);
     }
@@ -301,7 +493,7 @@ function buildOverallBriefCard(data) {
     if (data.portfolio_impact) {
         sections.push(`
             <div class="brief-article-section">
-                <div class="brief-article-label">💼 Portfolio Impact</div>
+                <div class="brief-article-label">Portfolio Impact</div>
                 <p class="brief-article-body">${data.portfolio_impact}</p>
             </div>`);
     }
@@ -323,11 +515,18 @@ function buildOverallBriefCard(data) {
         sections.push(`<div class="brief-article-section">${bodyParas}</div>`);
     }
 
+    if (data.macro_exposures && data.macro_exposures.length) {
+        sections.push(buildMacroWeb(data.macro_exposures));
+    }
+
     return `
     <div class="overall-brief-card">
         <div class="overall-brief-meta">
-            <span class="overall-tag">🌅 Morning Overview</span>
+            <span class="overall-tag">Morning Overview</span>
             <span class="badge ${sentClass === 'mixed' ? 'neutral' : sentClass}">${sentLabel}</span>
+            <button class="action-btn secondary" id="play-brief-btn" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; margin-left: auto;">
+                🔊 Play Audio
+            </button>
         </div>
         <div class="overall-brief-headline">${data.bluf || ''}</div>
         <div class="overall-brief-sections">${sections.join('')}</div>
@@ -396,7 +595,7 @@ async function loadAnalytics() {
     cont.innerHTML = '<div class="empty-state"><div class="empty-glow"></div><p>Fetching market data…</p></div>';
 
     try {
-        const res = await fetch(`${API}/api/analytics`);
+        const res = await fetchAuthorized(`${API}/api/analytics`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         renderAnalytics(data, cont);
@@ -490,23 +689,21 @@ function buildCorrWeb(corrData) {
     <div class="analytics-card">
         <h3>Correlation Cluster Map</h3>
         <p class="corr-desc">Holdings are pulled together by correlation strength &mdash; <span style="color:var(--text-1)">clustered = move together</span>, distant = uncorrelated. <span style="color:var(--text-3)">Dark edges = inverse</span>. Watch the physics settle.</p>
-        <div style="display:flex;justify-content:center">
-            <canvas id="corr-canvas" width="460" height="390" class="corr-canvas"></canvas>
+        <div style="display:flex;justify-content:center; touch-action:none;">
+            <svg id="corr-svg" width="460" height="390" class="corr-canvas" xmlns="http://www.w3.org/2000/svg" style="border-radius: var(--radius-md)"></svg>
         </div>
         <p id="corr-note" class="corr-desc" style="margin-top:.4rem;text-align:center"></p>
     </div>`;
 }
 
 function initCorrSim(corrData) {
-    const canvas = document.getElementById('corr-canvas');
-    if (!canvas || !corrData) return;
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
+    const svg = document.getElementById('corr-svg');
+    if (!svg || !corrData) return;
+    const W = 460, H = 390;
     const { tickers, matrix } = corrData;
     const n = tickers.length;
     const NR = Math.max(16, Math.min(26, 200 / n));
 
-    // Seed nodes near center with a tiny random spread so forces can act
     const nodes = tickers.map(t => ({
         t,
         x: W / 2 + (Math.random() - 0.5) * 60,
@@ -514,62 +711,133 @@ function initCorrSim(corrData) {
         vx: 0, vy: 0
     }));
 
-    const K_REPEL = 10000;          // point repulsion constant
-    const K_SPRING = 0.01;         // spring stiffness
-    const DAMPING = 0.80;          // velocity decay per tick
-    const BASE_DIST = Math.min(W, H) * 0.50;  // ideal distance for corr=0
+    const K_REPEL = 10000;
+    const K_SPRING = 0.01;
+    const DAMPING = 0.80;
+    const BASE_DIST = Math.min(W, H) * 0.50;
     let iter = 0;
     let rafId = null;
     let draggedNode = null;
+    let hoveredNode = null;
+
+    let svgEdges = [];
+    let svgNodes = [];
+
+    // Initialize SVG elements
+    const edgesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const nodesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    svg.appendChild(edgesGroup);
+    svg.appendChild(nodesGroup);
+
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            const corr = matrix[i][j];
+            if (Math.abs(corr) < 0.25) continue;
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            const alpha = Math.min(0.92, 0.15 + Math.abs(corr) * 0.77);
+            const baseStroke = corr > 0 ? `rgba(255,255,255,${alpha})` : `rgba(100,100,100,${alpha})`;
+            line.setAttribute("stroke", baseStroke);
+            line.setAttribute("stroke-width", Math.max(1, Math.abs(corr) * 5).toString());
+            line.setAttribute("stroke-linecap", "round");
+            line.style.transition = "stroke 0.2s, opacity 0.2s";
+            edgesGroup.appendChild(line);
+            svgEdges.push({ i, j, corr, el: line, baseStroke });
+        }
+    }
+
+    for (let i = 0; i < n; i++) {
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.style.cursor = "grab";
+        
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("r", NR.toString());
+        circle.setAttribute("fill", "#0a0a0a");
+        circle.setAttribute("stroke", "#ffffff");
+        circle.setAttribute("stroke-width", "1.5");
+        circle.style.transition = "fill 0.2s, stroke 0.2s";
+        g.appendChild(circle);
+        
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.textContent = tickers[i];
+        const fs = Math.max(8, Math.min(11, 130 / n));
+        text.setAttribute("font-size", fs.toString());
+        text.setAttribute("font-family", "Inter,system-ui,sans-serif");
+        text.setAttribute("font-weight", "700");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "central");
+        text.setAttribute("dy", "1");
+        text.setAttribute("fill", "#ffffff");
+        text.style.pointerEvents = "none";
+        g.appendChild(text);
+        
+        nodesGroup.appendChild(g);
+        svgNodes.push({ i, g, el: circle });
+
+        // Interactivity
+        g.addEventListener('pointerdown', e => {
+            draggedNode = nodes[i];
+            draggedNode.vx = 0; draggedNode.vy = 0;
+            iter = 0;
+            if (!rafId) tick();
+            g.setPointerCapture(e.pointerId);
+            e.stopPropagation();
+        });
+        g.addEventListener('pointerenter', () => { hoveredNode = i; if (!rafId) tick(); });
+        g.addEventListener('pointerleave', () => { if (hoveredNode === i) hoveredNode = null; if (!rafId) tick(); });
+    }
+
+    svg.addEventListener('pointermove', e => {
+        if (draggedNode) {
+            const rect = svg.getBoundingClientRect();
+            draggedNode.x = e.clientX - rect.left;
+            draggedNode.y = e.clientY - rect.top;
+            iter = 0;
+            if (!rafId) tick();
+        }
+    });
+
+    const endDrag = () => {
+        if (draggedNode) {
+            draggedNode = null;
+            if (!rafId) tick();
+        }
+    };
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointercancel', endDrag);
 
     function step() {
         const fx = new Float64Array(n);
         const fy = new Float64Array(n);
-
         for (let i = 0; i < n; i++) {
             for (let j = i + 1; j < n; j++) {
                 const dx = nodes[j].x - nodes[i].x;
                 const dy = nodes[j].y - nodes[i].y;
                 const d = Math.sqrt(dx * dx + dy * dy) || 0.1;
                 const nx = dx / d, ny = dy / d;
-
-                // Repulsion between every pair — use safeD to prevent explosion at d≈0
                 const safeD = Math.max(10, d);
                 const frep = K_REPEL / (safeD * safeD);
                 fx[i] -= frep * nx; fy[i] -= frep * ny;
                 fx[j] += frep * nx; fy[j] += frep * ny;
-
-                // Spring: resting length = BASE_DIST * (1 - corr)
-                //   corr= 1 → rest=0   (collapse together)
-                //   corr= 0 → rest=BASE (neutral)
-                //   corr=-1 → rest=2×BASE (extra repulsion)
                 const corr = matrix[i][j];
                 const ideal = BASE_DIST * (1 - corr);
                 const fsp = K_SPRING * (d - ideal);
                 fx[i] += fsp * nx; fy[i] += fsp * ny;
                 fx[j] -= fsp * nx; fy[j] -= fsp * ny;
             }
-
-            // Soft boundary walls
             const m = NR + 10;
             if (nodes[i].x < m) fx[i] += (m - nodes[i].x) * 0.55;
             if (nodes[i].x > W - m) fx[i] -= (nodes[i].x - (W - m)) * 0.55;
             if (nodes[i].y < m) fy[i] += (m - nodes[i].y) * 0.55;
             if (nodes[i].y > H - m) fy[i] -= (nodes[i].y - (H - m)) * 0.55;
-
-            // Very weak gravity toward center
             fx[i] += (W / 2 - nodes[i].x) * 0.003;
             fy[i] += (H / 2 - nodes[i].y) * 0.003;
         }
 
         for (let i = 0; i < n; i++) {
             if (nodes[i] === draggedNode) continue;
-
-            // Safety clamp to prevent physics explosion from edge cases
             const clampF = 50;
             const safeFx = Math.max(-clampF, Math.min(clampF, fx[i]));
             const safeFy = Math.max(-clampF, Math.min(clampF, fy[i]));
-
             nodes[i].vx = (nodes[i].vx + safeFx) * DAMPING;
             nodes[i].vy = (nodes[i].vy + safeFy) * DAMPING;
             nodes[i].x = Math.max(NR, Math.min(W - NR, nodes[i].x + nodes[i].vx));
@@ -579,114 +847,65 @@ function initCorrSim(corrData) {
     }
 
     function draw() {
-        ctx.clearRect(0, 0, W, H);
+        for (const edge of svgEdges) {
+            const n1 = nodes[edge.i];
+            const n2 = nodes[edge.j];
+            edge.el.setAttribute("x1", n1.x.toFixed(1));
+            edge.el.setAttribute("y1", n1.y.toFixed(1));
+            edge.el.setAttribute("x2", n2.x.toFixed(1));
+            edge.el.setAttribute("y2", n2.y.toFixed(1));
 
-        // Edges
-        for (let i = 0; i < n; i++) {
-            for (let j = i + 1; j < n; j++) {
-                const corr = matrix[i][j];
-                if (Math.abs(corr) < 0.25) continue;
-                const alpha = Math.min(0.92, 0.15 + Math.abs(corr) * 0.77);
-                ctx.beginPath();
-                ctx.moveTo(nodes[i].x, nodes[i].y);
-                ctx.lineTo(nodes[j].x, nodes[j].y);
-                ctx.strokeStyle = corr > 0 ? `rgba(255,255,255,${alpha})` : `rgba(100,100,100,${alpha})`;
-                ctx.lineWidth = Math.max(1, Math.abs(corr) * 5);
-                ctx.lineCap = 'round';
-                ctx.stroke();
+            if (hoveredNode !== null) {
+                if (edge.i === hoveredNode || edge.j === hoveredNode) {
+                    edge.el.setAttribute("stroke", "var(--brand)");
+                    edge.el.setAttribute("opacity", "1");
+                } else {
+                    edge.el.setAttribute("stroke", edge.baseStroke);
+                    edge.el.setAttribute("opacity", "0.15");
+                }
+            } else {
+                edge.el.setAttribute("stroke", edge.baseStroke);
+                edge.el.setAttribute("opacity", "1");
             }
         }
+        
+        for (const { i, g, el } of svgNodes) {
+            const node = nodes[i];
+            g.setAttribute("transform", `translate(${node.x.toFixed(1)}, ${node.y.toFixed(1)})`);
 
-        // Nodes
-        for (const { x, y, t } of nodes) {
-            // Glow halo
-            const grd = ctx.createRadialGradient(x, y, NR * 0.15, x, y, NR * 1.8);
-            grd.addColorStop(0, 'rgba(255,255,255,0.15)');
-            grd.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.beginPath();
-            ctx.arc(x, y, NR * 1.8, 0, Math.PI * 2);
-            ctx.fillStyle = grd;
-            ctx.fill();
-
-            // Circle
-            ctx.beginPath();
-            ctx.arc(x, y, NR, 0, Math.PI * 2);
-            ctx.fillStyle   = '#0a0a0a';
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth   = 1.5;
-            ctx.stroke();
-
-            // Label
-            const fs = Math.max(8, Math.min(11, 130 / n));
-            ctx.font         = `700 ${fs}px Inter,system-ui,sans-serif`;
-            ctx.textAlign    = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle    = '#ffffff';
-            ctx.fillText(t, x, y);
+            if (hoveredNode !== null) {
+                if (i === hoveredNode) {
+                    el.setAttribute("stroke", "var(--brand)");
+                    el.setAttribute("fill", "#1a2235");
+                } else {
+                    const connected = svgEdges.some(e => (e.i === hoveredNode && e.j === i) || (e.j === hoveredNode && e.i === i));
+                    if (connected) {
+                        el.setAttribute("stroke", "#4f9eff");
+                        el.setAttribute("fill", "#0a0a0a");
+                    } else {
+                        el.setAttribute("stroke", "#333333");
+                        el.setAttribute("fill", "#0a0a0a");
+                    }
+                }
+            } else {
+                el.setAttribute("stroke", "#ffffff");
+                el.setAttribute("fill", "#0a0a0a");
+            }
         }
     }
 
-    // Annotate most-correlated pair
     let maxC = 0, maxPair = '';
-    for (let i = 0; i < n; i++)
-        for (let j = i + 1; j < n; j++)
-            if (matrix[i][j] > maxC) { maxC = matrix[i][j]; maxPair = `${tickers[i]} & ${tickers[j]}`; }
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++)
+        if (matrix[i][j] > maxC) { maxC = matrix[i][j]; maxPair = `${tickers[i]} & ${tickers[j]}`; }
     if (maxC > 0.3) {
         const note = document.getElementById('corr-note');
         if (note) note.textContent = `Most correlated pair: ${maxPair} (r = ${maxC.toFixed(2)})`;
     }
 
-    // Dragging interactions
-    canvas.style.touchAction = 'none';
-
-    canvas.addEventListener('pointerdown', e => {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-        draggedNode = nodes.find(nd => {
-            const dx = nd.x - mx, dy = nd.y - my;
-            return dx * dx + dy * dy < (NR + 8) * (NR + 8);
-        });
-        if (draggedNode) {
-            draggedNode.vx = 0; draggedNode.vy = 0;
-            iter = 0;
-            canvas.style.cursor = 'grabbing';
-            if (!rafId) tick();
-        }
-    });
-
-    canvas.addEventListener('pointermove', e => {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-        if (draggedNode) {
-            draggedNode.x = mx;
-            draggedNode.y = my;
-            draggedNode.vx = 0; draggedNode.vy = 0;
-            iter = 0;
-            if (!rafId) tick();
-        } else {
-            const hovered = nodes.some(nd => {
-                const dx = nd.x - mx, dy = nd.y - my;
-                return dx * dx + dy * dy < (NR + 5) * (NR + 5);
-            });
-            canvas.style.cursor = hovered ? 'grab' : 'default';
-        }
-    });
-
-    const endDrag = () => {
-        if (draggedNode) {
-            draggedNode = null;
-            canvas.style.cursor = 'default';
-        }
-    };
-    canvas.addEventListener('pointerup', endDrag);
-    canvas.addEventListener('pointerleave', endDrag);
-    canvas.addEventListener('pointercancel', endDrag);
-
     function tick() {
-        if (iter < 220 || draggedNode) step();
+        if (iter < 220 || draggedNode || hoveredNode !== null) step();
         draw();
-        if (iter < 290 || draggedNode) {
+        if (iter < 290 || draggedNode || hoveredNode !== null) {
             rafId = requestAnimationFrame(tick);
         } else {
             rafId = null;
@@ -704,6 +923,82 @@ function build52wBar(h) {
     return `<div class="w52-wrap" title="52w Low: $${h.week_52_low}  |  52w High: $${h.week_52_high}">
         <div class="w52-track"><div class="w52-dot" style="left:${pct}%"></div></div>
         <div class="w52-labels"><span>$${h.week_52_low}</span><span>$${h.week_52_high}</span></div>
+    </div>`;
+}
+
+/* ---- Sentiment Treemap ---- */
+function buildTreemap(holdings) {
+    const valid = holdings.filter(h => h.weight_pct > 0).map(h => ({
+        t: h.ticker,
+        val: h.weight_pct,
+        ret: h.annual_return_pct ?? 0,
+        w: 0, h: 0, x: 0, y: 0
+    })).sort((a,b) => b.val - a.val);
+
+    if (valid.length === 0) return '';
+
+    const W = 460;
+    const H = 220;
+    const rects = [];
+
+    function sliceAndDice(items, x, y, bw, bh) {
+        if (!items.length) return;
+        if (items.length === 1) {
+            items[0].x = x; items[0].y = y; items[0].w = bw; items[0].h = bh;
+            rects.push(items[0]);
+            return;
+        }
+        const total = items.reduce((sum, item) => sum + item.val, 0);
+        let run = 0, split = 0;
+        for (let i = 0; i < items.length - 1; i++) {
+            run += items[i].val;
+            split = i;
+            if (run >= total / 2) break;
+        }
+        const left = items.slice(0, split+1);
+        const right = items.slice(split+1);
+        const lr = left.reduce((s, x) => s + x.val, 0) / total;
+        
+        if (bw > bh) {
+            const wL = bw * lr;
+            sliceAndDice(left, x, y, wL, bh);
+            sliceAndDice(right, x + wL, y, bw - wL, bh);
+        } else {
+            const hT = bh * lr;
+            sliceAndDice(left, x, y, bw, hT);
+            sliceAndDice(right, x, y + hT, bw, bh - hT);
+        }
+    }
+    
+    sliceAndDice(valid, 0, 0, W, H);
+    
+    const boxesHtml = rects.map(r => {
+        let color = '#444';
+        let txtColor = '#fff';
+        if (r.ret > 15) { color = '#ffffff'; txtColor = '#000000'; }
+        else if (r.ret > 0) { color = '#aaaaaa'; txtColor = '#000000'; }
+        else if (r.ret < -15) { color = '#1a1a1a'; txtColor = '#777777'; }
+        else { color = '#444444'; txtColor = '#ffffff'; }
+
+        return `
+            <g transform="translate(${r.x}, ${r.y})" style="cursor:help;">
+                <title>${r.t}: ${r.val.toFixed(1)}% weight | 1Y: ${r.ret > 0 ? '+' : ''}${r.ret.toFixed(1)}%</title>
+                <rect width="${r.w}" height="${r.h}" fill="${color}" stroke="#000" stroke-width="2"></rect>
+                ${(r.w > 30 && r.h > 20) ? `<text x="${r.w/2}" y="${r.h/2 - 2}" font-size="${Math.min(18, Math.max(10, r.w/4))}px" font-weight="700" fill="${txtColor}" text-anchor="middle" dominant-baseline="central">${r.t}</text>
+                                           <text x="${r.w/2}" y="${r.h/2 + 12}" font-size="${Math.min(11, Math.max(8, r.w/6))}px" font-weight="500" fill="${txtColor}" text-anchor="middle" dominant-baseline="central">${r.ret > 0 ? '+' : ''}${r.ret.toFixed(1)}%</text>` : ''}
+            </g>
+        `;
+    }).join('');
+
+    return `
+    <div class="analytics-card" style="margin-bottom:1rem">
+        <h3 class="has-tooltip" data-tip="Box size = Portfolio Weight. Color = 1-Year Return.">Performance Treemap</h3>
+        <p class="corr-desc">Institutional visualization for exposure attribution. <span style="color:#fff">White = Overperforming</span>, <span style="color:#666">Grey = Underperforming</span>.</p>
+        <div style="display:flex; justify-content:center; margin-top: 1rem;">
+            <svg width="460" height="220" viewBox="0 0 ${W} ${H}" style="border-radius:var(--radius-sm)">
+                ${boxesHtml}
+            </svg>
+        </div>
     </div>`;
 }
 
@@ -725,6 +1020,108 @@ function buildStressTest(scenarios, portfolioBeta) {
     </div>`;
 }
 
+/* ---- Risk-Return Plot (Alpha Quadrant) ---- */
+function buildAlphaQuadrant(holdings) {
+    if (!holdings || holdings.length < 2) return '';
+    const points = holdings.filter(h => h.annual_volatility_pct != null && h.annual_return_pct != null);
+    if (!points.length) return '';
+
+    const W = 460, H = 280;
+    const pad = 35;
+    
+    // Limits
+    let minVol = Math.min(0, ...points.map(p => p.annual_volatility_pct));
+    let maxVol = Math.max(10, ...points.map(p => p.annual_volatility_pct));
+    let minRet = Math.min(0, ...points.map(p => p.annual_return_pct));
+    let maxRet = Math.max(10, ...points.map(p => p.annual_return_pct));
+    
+    maxVol += 5; minVol -= 5;
+    maxRet += 5; minRet -= 5;
+
+    const vRange = (maxVol - minVol) || 1;
+    const rRange = (maxRet - minRet) || 1;
+    
+    const getX = vol => pad + ((vol - minVol) / vRange) * (W - pad*2);
+    const getY = ret => H - pad - ((ret - minRet) / rRange) * (H - pad*2);
+    
+    const origX = getX(0); 
+    const origY = getY(0);
+
+    const axes = `
+        <line x1="${pad}" y1="${origY}" x2="${W-pad}" y2="${origY}" class="ch-zero-line"/>
+        <line x1="${origX}" y1="${pad}" x2="${origX}" y2="${H-pad}" class="ch-zero-line"/>
+        <text x="${W-pad}" y="${origY-5}" class="ch-axis-lbl" text-anchor="end">Risk (Vol) →</text>
+        <text x="${origX+5}" y="${pad}" class="ch-axis-lbl" text-anchor="start">Return (1Y) ↑</text>
+    `;
+
+    const dots = points.map(p => {
+        const x = getX(p.annual_volatility_pct);
+        const y = getY(p.annual_return_pct);
+        return `
+        <g class="al-node-g">
+            <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" class="al-node"/>
+            <text x="${x.toFixed(1)}" y="${(y-8).toFixed(1)}" class="al-node-lbl">${p.ticker}</text>
+        </g>`;
+    }).join('');
+
+    return `
+    <div class="analytics-card">
+        <h3>The Alpha Quadrant</h3>
+        <p class="corr-desc">Risk (Annual Volatility) vs Reward (1Y Return). Ideal position is Top-Left.</p>
+        <div style="display:flex;justify-content:center">
+            <svg viewBox="0 0 ${W} ${H}" class="alpha-svg" width="100%" height="auto" style="max-width:460px">
+                ${axes}
+                ${dots}
+            </svg>
+        </div>
+    </div>`;
+}
+
+/* ---- Catalyst Radar (Event Sonar) ---- */
+function buildEventSonar(holdings) {
+    const dates = holdings.filter(h => h.upcoming_earnings).map(h => {
+        const parts = h.upcoming_earnings.split('-');
+        return {
+            ticker: h.ticker, 
+            date: new Date(parts[0], parts[1]-1, parts[2])
+        };
+    }).sort((a, b) => a.date - b.date);
+    
+    if (!dates.length) return '';
+
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    
+    let items = dates.map(d => {
+        const diffTime = d.date - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        let dayStr;
+        if (diffDays < 0) dayStr = `${Math.abs(diffDays)}d ago`;
+        else if (diffDays === 0) dayStr = 'Today';
+        else if (diffDays === 1) dayStr = 'Tomorrow';
+        else dayStr = `In ${diffDays}d`;
+
+        return `
+            <div class="sonar-item">
+                <div class="sonar-tick"></div>
+                <div class="sonar-meta">
+                    <span class="sonar-t">${d.ticker}</span>
+                    <span class="sonar-d">${dayStr}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+    <div class="analytics-card">
+        <h3>Catalyst Radar</h3>
+        <p class="corr-desc">Upcoming earnings and confirmed macro catalysts.</p>
+        <div class="sonar-track">
+            <div class="sonar-line"></div>
+            <div class="sonar-items">${items}</div>
+        </div>
+    </div>`;
+}
 
 function renderAnalytics(data, cont) {
     const m = data.portfolio_metrics || {};
@@ -873,8 +1270,13 @@ function renderAnalytics(data, cont) {
                 <div class="sector-bars">${sectorBars || '<p style="color:var(--text-3);font-size:.85rem">—</p>'}</div>
             </div>
         </div>
+        <div class="analytics-row">
+            ${buildAlphaQuadrant(hs)}
+            ${buildEventSonar(hs)}
+        </div>
         ${buildStressTest(stress, portBeta)}
         ${buildCorrWeb(corr)}
+        ${buildTreemap(hs)}
         <div class="analytics-card" style="margin-bottom:1rem">
             <h3>Holdings Detail</h3>
             <div style="overflow-x:auto">
@@ -914,7 +1316,7 @@ async function loadActions() {
     cont.innerHTML = '<div class="empty-state"><div class="empty-glow"></div><p>Running portfolio analysis…</p></div>';
 
     try {
-        const res = await fetch(`${API}/api/actions`);
+        const res = await fetchAuthorized(`${API}/api/actions?_t=${Date.now()}`);
         const data = await res.json();
         renderActions(data.items || [], cont);
     } catch (e) {
@@ -935,8 +1337,16 @@ function renderActions(items, cont) {
         <div class="action-item ${item.type}">
             <span class="action-icon">${item.icon}</span>
             <div class="action-text">
-                <strong>${item.title}</strong>
-                <span class="sub">${item.sub}</span>
+                <div style="display:flex; align-items:center;">
+                    <strong>${item.title}</strong>
+                    <span class="action-info-icon has-tooltip" data-tip="${item.beginner_tip || ''}">ⓘ</span>
+                </div>
+                <span class="technical-desc">${item.technical_desc || item.sub || ''}</span>
+                ${item.execution_example ? `
+                <div class="execution-example">
+                    <span class="execution-label">Execution Example</span>
+                    <div class="execution-content">${item.execution_example}</div>
+                </div>` : ''}
             </div>
         </div>`).join('');
 
@@ -945,4 +1355,81 @@ function renderActions(items, cont) {
             <h3>Personalized Recommendations</h3>
             <div class="action-items-list">${html}</div>
         </div>`;
+}
+
+/* =====================================================
+   SNAPTRADE BROKERAGE SYNC
+   ===================================================== */
+function setupSnapTrade() {
+    checkSnapTradeStatus();
+
+    $('snaptrade-connect-btn').addEventListener('click', async () => {
+        try {
+            const res = await fetchAuthorized(`${API}/api/snaptrade/connect`, { method: 'POST' });
+            const data = await res.json();
+            if (data.portal_url) {
+                const portalWindow = window.open(data.portal_url, '_blank');
+                const checkInterval = setInterval(() => {
+                    if (portalWindow.closed) {
+                        clearInterval(checkInterval);
+                        checkSnapTradeStatus();
+                    }
+                }, 1000);
+            }
+        } catch (e) { console.error('SnapTrade connect', e); }
+    });
+
+    $('snaptrade-sync-btn').addEventListener('click', async () => {
+        const btn = $('snaptrade-sync-btn');
+        const spinner = $('snaptrade-spinner');
+        const btnText = btn.querySelector('.btn-text');
+        btnText.textContent = 'Syncing…';
+        spinner.classList.remove('hidden');
+        btn.disabled = true;
+
+        try {
+            const res = await fetchAuthorized(`${API}/api/snaptrade/sync`, { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                holdings = data.holdings || [];
+                renderHoldingsTable();
+            }
+        } catch (e) { console.error('SnapTrade sync', e); }
+        finally {
+            btnText.textContent = '↻ Sync Now';
+            spinner.classList.add('hidden');
+            btn.disabled = false;
+        }
+    });
+
+    $('snaptrade-disconnect-btn').addEventListener('click', async () => {
+        if (!confirm('Are you sure?')) return;
+        try {
+            await fetchAuthorized(`${API}/api/snaptrade/disconnect`, { method: 'DELETE' });
+            checkSnapTradeStatus();
+        } catch (e) { console.error('SnapTrade disconnect', e); }
+    });
+}
+
+async function checkSnapTradeStatus() {
+    try {
+        const res = await fetchAuthorized(`${API}/api/snaptrade/status`);
+        const data = await res.json();
+        const discView = $('snaptrade-disconnected-view');
+        const connView = $('snaptrade-connected-view');
+        const badge = $('snaptrade-status-badge');
+        
+        if (data.connected) {
+            discView.classList.add('hidden');
+            connView.classList.remove('hidden');
+            badge.textContent = 'Connected';
+            badge.className = 'status-badge connected';
+            $('st-user-id').textContent = data.snaptrade_user_id || 'Linked';
+        } else {
+            discView.classList.remove('hidden');
+            connView.classList.add('hidden');
+            badge.textContent = 'Disconnected';
+            badge.className = 'status-badge disconnected';
+        }
+    } catch (e) { console.error('checkSnapTradeStatus', e); }
 }
