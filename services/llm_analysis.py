@@ -331,6 +331,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         if weight > 40:
             items.append({
                 "type": "danger",
+                "category": "Risk Management",
                 "icon": "",
                 "title": f"Critical Concentration: {h['ticker']}",
                 "technical_desc": f"The position in {h['ticker']} has reached a terminal concentration level of {weight:.1f}% NAV. This creates a dangerous skew where idiosyncratic volatility overpowers systemic trends. In an adverse event specific to {h['ticker']}, the portfolio is mathematically predisposed to catastrophic drawdown regardless of overall market health.",
@@ -341,6 +342,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         elif weight > 25:
             items.append({
                 "type": "warning",
+                "category": "Risk Management",
                 "icon": "",
                 "title": f"Elevated Position Sizing: {h['ticker']}",
                 "technical_desc": f"With a {weight:.1f}% allocation, {h['ticker']} is approaching the threshold where its beta dominates the portfolio's directional movement. Sustained exposure at this level requires high conviction in secular outperformance; otherwise, the risk-adjusted return profile begins to degrade due to lack of asset orthogonality.",
@@ -355,6 +357,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         if sector not in ("Unknown", "Crypto") and pct > 55:
             items.append({
                 "type": "warning",
+                "category": "Structural Risk",
                 "icon": "",
                 "title": f"Structural Sector Saturation: {sector}",
                 "technical_desc": f"The portfolio currently exhibits a high degree of thematic clustering in {sector} ({pct:.0f}%). This lack of sector-level diversification exposes the capital base to 'black swan' regulatory changes, interest rate sensitivities, or supply chain shocks unique to the {sector} vertical.",
@@ -369,6 +372,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         if sharpe < 0:
             items.append({
                 "type": "danger",
+                "category": "Performance Efficiency",
                 "icon": "",
                 "title": "Sub-Optimal Risk-Adjusted Returns",
                 "technical_desc": f"The portfolio is currently operating with a negative Sharpe Ratio ({sharpe}). This indicates that the realized returns are not only failing to beat the risk-free rate, but that the investor is paying for high volatility without any associated alpha. The portfolio is essentially 'bleeding' without compensated risk.",
@@ -379,6 +383,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         elif sharpe < 0.5:
             items.append({
                 "type": "warning",
+                "category": "Performance Efficiency",
                 "icon": "",
                 "title": "Low Portfolio Efficiency Index",
                 "technical_desc": f"A Sharpe of {sharpe} suggests that the yield-per-unit-of-risk is significantly lower than institutional benchmarks (typically 0.7 - 1.2). The portfolio is likely over-leveraged in momentum-driven assets with high standard deviations that lack corresponding directional strength.",
@@ -389,8 +394,9 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         elif sharpe > 1.5:
             items.append({
                 "type": "success",
+                "category": "Performance Alpha",
                 "icon": "",
-                "title": "Alpha-Dominant Risk Profile",
+                "title": "Superior Risk-Adjusted Allocation",
                 "technical_desc": f"The portfolio is exhibiting a superior Sharpe Ratio of {sharpe}. This level of performance indicates a disciplined selection of assets that deliver high returns with exceptionally controlled volatility—outperforming standard systematic returns on a risk-adjusted basis.",
                 "sub": f"Exceptional risk-adjusted performance (Sharpe {sharpe}).",
                 "execution_example": "The current allocation is highly efficient. Avoid reflexive rebalancing that takes capital away from winning themes; instead, increase the stop-loss thresholds to lock in gains without exiting the secular trend.",
@@ -402,6 +408,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
     if not any("energy" in s or "utilities" in s for s in covered_sectors):
         items.append({
             "type": "info",
+            "category": "Diversification",
             "icon": "",
             "title": "Expansion: Secular Inflation Hedge",
             "technical_desc": "The portfolio lacks exposure to the 'Energy and Utilities' vertical, which serves as a critical macro-hedge during inflationary cycles. These assets often generate free cash flow that is uncorrelated with growth-oriented consumer tech, providing a 'hard asset' floor to the NAV.",
@@ -412,6 +419,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
     if not any("health" in s for s in covered_sectors):
         items.append({
             "type": "info",
+            "category": "Diversification",
             "icon": "",
             "title": "Expansion: Defensive Biotech & Pharma Anchor",
             "technical_desc": "Zero healthcare exposure creates a vulnerability to 'risk-off' market environments. Healthcare as a sector is characterized by inelastic demand and strong balance sheets, acting as a defensive 'flywheel' that provides liquidity and stability when cyclical sectors rotate lower.",
@@ -426,6 +434,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
         if gain_pct < -20 and h.get("qty", 0):
             items.append({
                 "type": "warning",
+                "category": "Tactical Review",
                 "icon": "",
                 "title": f"Strategic Stop-Loss Review: {h['ticker']}",
                 "technical_desc": f"The position in {h['ticker']} is currently in a deep technical drawdown of {abs(gain_pct):.1f}%. If the original fundamental narrative for this asset has changed, the capital is currently being wasted in a 'dead money' position that incurs significant opportunity cost.",
@@ -438,6 +447,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
     if len(holdings) < 3:
         items.append({
             "type": "info",
+            "category": "Foundational Setup",
             "icon": "",
             "title": "Expansion: Structural Diversification Floor",
             "technical_desc": "With fewer than 3 holdings, the portfolio is effectively 'binary'—reliant on single-event outcomes. Modern Portfolio Theory suggests that the most efficient risk reduction occurs when moving from 1 to 15 holdings, drastically reducing the impact of any single asset's failure.",
@@ -449,6 +459,7 @@ def generate_action_items(holdings: list[dict], analytics: dict) -> list[dict]:
     if not items:
         items.append({
             "type": "success",
+            "category": "Institutional Protocol",
             "icon": "",
             "title": "Institutional-Grade Allocation",
             "technical_desc": "The portfolio currently meets the 'Heimdall Standard' for risk-parity and sector distribution. Momentum, volatility, and diversification factors are harmonized to capture systematic growth while mitigating tail-risk events.",

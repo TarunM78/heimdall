@@ -32,6 +32,85 @@ async function fetchAuthorized(url, options = {}) {
 /* =====================================================
    TOOLTIPS for financial terms
    ===================================================== */
+const ACADEMY_LESSONS = {
+    'Sharpe Ratio': {
+        body: `<p>The <strong>Sharpe Ratio</strong> is the industry standard for measuring risk-adjusted performance. It tells you how much "excess return" you are getting for the extra volatility you endure by holding risky assets.</p>
+               <p>A Sharpe ratio of <strong>1.0</strong> is considered good, <strong>2.0</strong> is very good, and <strong>3.0</strong> is exceptional. If the ratio is negative, it means the portfolio is underperforming the risk-free rate (cash).</p>
+               <p><em>Example:</em> If two traders both make 15% return, but Trader A has half the volatility of Trader B, Trader A has a much higher Sharpe ratio and a more institutional-grade strategy.</p>`,
+        meta: { difficulty: 'Intermediate', category: 'Risk Metrics', impact: 'High' }
+    },
+    'Annual Volatility': {
+        body: `<p><strong>Volatility</strong> measures the dispersion of returns for a given security or market index. In simpler terms, it represents the "size of the swings" in your portfolio value.</p>
+               <p>We calculate this as the annualized standard deviation of daily returns. High volatility means prices can change dramatically in either direction over a short period.</p>`,
+        meta: { difficulty: 'Beginner', category: 'Risk Metrics', impact: 'Medium' }
+    },
+    'Annual Return (est.)': {
+        body: `<p>This is an <strong>estimated annual return</strong> based on the geometric mean of daily price movements over the last 12 months.</p>
+               <p>While useful for projection, it's important to remember that markets are non-linear; past growth in a bull market doesn't guarantee future performance during a rotation.</p>`,
+        meta: { difficulty: 'Beginner', category: 'Performance', impact: 'Low' }
+    },
+    'Portfolio Beta': {
+        body: `<p><strong>Beta</strong> measures the systematic risk of your portfolio relative to the broader market (S&P 500).</p>
+               <p>A Beta of <strong>1.0</strong> means your portfolio moves exactly with the market. A Beta of <strong>1.5</strong> means if the market drops 10%, you could drop 15%. A Beta below 1.0 is considered defensive.</p>`,
+        meta: { difficulty: 'Intermediate', category: 'Market Sensitivity', impact: 'Critical' }
+    },
+    'VaR 1-Day (95%)': {
+        body: `<p><strong>Value at Risk (VaR)</strong> is a statistical calculation used to estimate the maximum potential loss that a portfolio could expect to see over a certain time period, given typical market conditions.</p>
+               <p>A 1-day 95% VaR of 2% means that, based on historical volatility, there is a 95% chance you won't lose more than 2% tomorrow. However, it also means there is a 5% chance of a "tail event" where losses exceed that 2%.</p>`,
+        meta: { difficulty: 'Advanced', category: 'Tail Risk', impact: 'High' }
+    },
+    'Sector Breakdown': {
+        body: `<p><strong>Sector Allocation</strong> is the process of spreading investments across different areas of the economy (e.g., Tech, Healthcare, Energy).</p>
+               <p>Different sectors react differently to economic cycles. For example, Tech often thrives in low-interest-rate environments, while Energy may outperform during inflationary periods. Proper breakdown ensures your portfolio isn't overly exposed to a single economic driver.</p>`,
+        meta: { difficulty: 'Beginner', category: 'Diversification', impact: 'Medium' }
+    },
+    'Diversification': {
+        body: `<p>Often called <strong>"the only free lunch in finance,"</strong> diversification is the practice of investing in uncorrelated assets to reduce risk without necessarily sacrificing return.</p>
+               <p>By holding assets that don't all move in the same direction, you can smooth out the "valleys" in your portfolio's performance curve. True diversification requires spreading capital across different sectors, asset classes, and geographies.</p>`,
+        meta: { difficulty: 'Beginner', category: 'Strategy', impact: 'Universal' }
+    },
+    'Earnings Timeline': {
+        body: `<p><strong>Corporate Earnings</strong> are the primary driver of stock prices. Every quarter, public companies report their profits and provide "guidance" for the future.</p>
+               <p>Markets react not just to whether a company made a profit, but whether they beat or missed analyst expectations. Successful investors track these dates to manage the volatility that typically follows these announcements.</p>`,
+        meta: { difficulty: 'Intermediate', category: 'Catalysts', impact: 'Short-Term' }
+    },
+    'Macro Timeline': {
+        body: `<p>The <strong>Macro Context</strong> includes major economic releases that move the entire market at once, rather than just individual stocks.</p>
+               <p>Key events like the FOMC meeting or CPI data can change the "discount rate" for all future cash flows, making them critical dates for positioning. We track these to identify systematic shifts in the market environment.</p>`,
+        meta: { difficulty: 'Intermediate', category: 'Global Macro', impact: 'Systemic' }
+    },
+    'CPI (Inflation)': {
+        body: `<p>The <strong>Consumer Price Index (CPI)</strong> is the most widely watched measure of inflation. It tracks the price changes of a basket of goods and services.</p>
+               <p>High CPI prints typically lead the Federal Reserve to raise interest rates, which can hurt growth stocks but help certain defensive sectors. It is currently one of the most significant pivots for market direction.</p>`,
+        meta: { difficulty: 'Intermediate', category: 'Macro Data', impact: 'Critical' }
+    },
+    'NFP (Employment)': {
+        body: `<p><strong>Non-Farm Payrolls (NFP)</strong> is the monthly report of jobs added or lost in the US economy, excluding agricultural workers.</p>
+               <p>It is a primary indicator of economic health. A strong NFP suggests a robust economy but can also signal a "tight" labor market that might cause the Fed to keep rates higher for longer.</p>`,
+        meta: { difficulty: 'Advanced', category: 'Macro Data', impact: 'High' }
+    },
+    'FOMC Statement': {
+        body: `<p>The <strong>Federal Open Market Committee (FOMC)</strong> is the body of the Federal Reserve that sets national monetary policy, primarily through interest rate targets.</p>
+               <p>Their periodic statements and press conferences are scrutinized for "language shifts" that signal future policy changes. Every word in an FOMC statement can move billions of dollars in bond and equity markets.</p>`,
+        meta: { difficulty: 'Advanced', category: 'Monetary Policy', impact: 'Extreme' }
+    },
+    'The Alpha Quadrant': {
+        body: `<p>The <strong>Alpha Quadrant</strong> is a proprietary visualization that plots your holdings on two axes: <strong>Annual Return</strong> (Reward) vs. <strong>Annual Volatility</strong> (Risk).</p>
+               <p>The goal is to move Toward the <strong>Top-Left</strong> (High Return, Low Risk). Assets in the bottom-right are consuming "risk budget" without delivering compensatory returns. Assets in the top-right are strong performers but require a high stomach for volatility.</p>`,
+        meta: { difficulty: 'Intermediate', category: 'Visualization', impact: 'Actionable' }
+    },
+    'Correlation Cluster Map': {
+        body: `<p>This map uses a physics-based simulation to visualize how closely your assets move in tandem. Assets that are **clustered together** have high historical correlation.</p>
+               <p>If your entire portfolio is tightly clustered, you have high <strong>systemic risk</strong>—a single market event could sink all your positions at once. A well-diversified portfolio will show assets scattered across the map.</p>`,
+        meta: { difficulty: 'Advanced', category: 'Diversification', impact: 'Critical' }
+    },
+    'Performance Tree Map': {
+        body: `<p>A <strong>Treemap</strong> allows you to visualize two dimensions of your portfolio at once: <strong>Size</strong> (Area of the box) and <strong>Performance</strong> (Color of the box).</p>
+               <p>It helps you instantly identify which of your largest positions are driving your gains or losses. It provides a "squarified" view of your capital allocation relative to market success.</p>`,
+        meta: { difficulty: 'Beginner', category: 'Visualization', impact: 'Actionable' }
+    },
+};
+
 const TIPS = {
     'Sharpe Ratio': "Measures return per unit of risk. Above 1.0 = good, above 2.0 = excellent. Below 0 means you'd be better off in cash.",
     'Annual Volatility': 'How much the portfolio swings year-to-year (std dev of daily returns x sqrt(252)). Higher = riskier.',
@@ -712,7 +791,7 @@ function buildCorrWeb(corrData) {
     if (!corrData || !corrData.tickers || corrData.tickers.length < 2) return '';
     return `
     <div class="analytics-card">
-        <h3>Correlation Cluster Map</h3>
+        <h3 class="has-tooltip">Correlation Cluster Map</h3>
         <p class="corr-desc">Holdings are pulled together by correlation strength &mdash; <span style="color:var(--text-1)">clustered = move together</span>, distant = uncorrelated. <span style="color:var(--text-3)">Dark edges = inverse</span>.</p>
         
         <div class="corr-layout">
@@ -1129,7 +1208,7 @@ function buildTreemap(holdings) {
 
     return `
     <div class="analytics-card" style="margin-bottom:1rem">
-        <h3 class="has-tooltip" data-tip="Box size = Portfolio Weight. Color = 1-Year Return.">Performance Treemap</h3>
+        <h3 class="has-tooltip" data-tip="Box size = Portfolio Weight. Color = 1-Year Return.">Performance Tree Map</h3>
         <p class="corr-desc">Institutional visualization for exposure attribution. <span style="color:#fff">White = Overperforming</span>, <span style="color:#666">Grey = Underperforming</span>.</p>
         
         <div class="corr-layout">
@@ -1295,7 +1374,7 @@ function buildAlphaQuadrant(holdings) {
     return `
     <div class="analytics-card">
         <div class="card-header">
-            <h3>The Alpha Quadrant</h3>
+            <h3 class="has-tooltip">The Alpha Quadrant</h3>
             <div class="btn-group">
                 <button id="alpha-zoom-out" class="icon-btn" title="Zoom Out (–)">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -1319,11 +1398,10 @@ function buildAlphaQuadrant(holdings) {
 }
 
 /* ---- Catalyst Radar (Event Sonar) ---- */
-function buildCalendarUI(eventDates) {
+function buildCalendarUI(eventDates, macroDates = []) {
     const now = new Date();
     now.setHours(0,0,0,0);
     
-    // Start of current week (Monday)
     const start = new Date(now);
     const day = start.getDay();
     const diff = start.getDate() - day + (day === 0 ? -6 : 1);
@@ -1339,22 +1417,27 @@ function buildCalendarUI(eventDates) {
         const isToday = temp.getTime() === now.getTime();
         const dateStr = temp.toISOString().split('T')[0];
         
-        // Find events on this day
-        const dayEvents = eventDates.filter(d => {
-            const dStr = d.date.toISOString().split('T')[0];
-            return dStr === dateStr;
-        });
+        const dayEvents = eventDates.filter(d => d.date.toISOString().split('T')[0] === dateStr);
+        const dayMacros = macroDates.filter(d => d.date.toISOString().split('T')[0] === dateStr);
 
         const hasEvent = dayEvents.length > 0;
-        const tickers = dayEvents.map(e => e.ticker).join(', ');
-        const tip = hasEvent ? `data-tip="${tickers} Earnings"` : '';
-        const eventCls = hasEvent ? 'has-event has-tooltip' : '';
+        const hasMacro = dayMacros.length > 0;
+
+        const earningsTip = dayEvents.map(e => e.ticker + ' Earnings').join(', ');
+        const macroTip = dayMacros.map(e => e.label).join(', ');
+        const fullTip = [earningsTip, macroTip].filter(Boolean).join(' | ');
+
+        const tip = (hasEvent || hasMacro) ? `data-tip="${fullTip}"` : '';
+        const eventCls = (hasEvent || hasMacro) ? 'has-event has-tooltip' : '';
         const todayCls = isToday ? 'today' : '';
 
         daysHtml += `
             <div class="cal-day ${todayCls} ${eventCls}" ${tip}>
                 ${temp.getDate()}
-                ${hasEvent ? '<div class="event-dot"></div>' : ''}
+                <div class="event-dots">
+                    ${hasEvent ? '<div class="event-dot earnings"></div>' : ''}
+                    ${hasMacro ? '<div class="event-dot macro"></div>' : ''}
+                </div>
             </div>
         `;
         temp.setDate(temp.getDate() + 1);
@@ -1370,7 +1453,7 @@ function buildCalendarUI(eventDates) {
     `;
 }
 
-function buildEventSonar(holdings) {
+function buildEventSonar(holdings, macroCatalysts = []) {
     const eventDates = holdings.filter(h => h.upcoming_earnings).map(h => {
         const parts = h.upcoming_earnings.split('-');
         return {
@@ -1378,40 +1461,55 @@ function buildEventSonar(holdings) {
             date: new Date(parts[0], parts[1]-1, parts[2])
         };
     }).sort((a, b) => a.date - b.date);
+
+    const macroDates = macroCatalysts.map(m => ({
+        label: m.label,
+        date: new Date(m.date)
+    })).sort((a, b) => a.date - b.date);
     
     const now = new Date();
     now.setHours(0,0,0,0);
     
-    let items = eventDates.map(d => {
+    const formatSonar = (events, labelFn) => events.map(d => {
         const diffTime = d.date - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        let dayStr;
-        if (diffDays < 0) dayStr = `${Math.abs(diffDays)}d ago`;
-        else if (diffDays === 0) dayStr = 'Today';
-        else if (diffDays === 1) dayStr = 'Tomorrow';
-        else dayStr = `In ${diffDays}d`;
-
+        let dayStr = diffDays < 0 ? `${Math.abs(diffDays)}d ago` : (diffDays === 0 ? 'Today' : (diffDays === 1 ? 'Tomorrow' : `In ${diffDays}d`));
         return `
             <div class="sonar-item">
                 <div class="sonar-tick"></div>
                 <div class="sonar-meta">
-                    <span class="sonar-t">${d.ticker}</span>
+                    <span class="sonar-t has-tooltip">${labelFn(d)}</span>
                     <span class="sonar-d">${dayStr}</span>
                 </div>
-            </div>
-        `;
+            </div>`;
     }).join('');
+
+    const earningsItems = formatSonar(eventDates, d => d.ticker);
+    const macroItems = formatSonar(macroDates, d => d.label);
 
     return `
     <div class="analytics-card">
-        <h3 class="has-tooltip" data-tip="Calendar shows coming 4 weeks. Dots = Earnings dates.">Catalyst Radar</h3>
-        <p class="corr-desc">Upcoming earnings and confirmed macro catalysts.</p>
+        <h3 class="has-tooltip" data-tip="Calendar shows coming 4 weeks. Dots = Key catalysts.">Catalyst Radar</h3>
+        <p class="corr-desc">Tracking corporate earnings and systematic macro data releases.</p>
         
-        ${buildCalendarUI(eventDates)}
+        ${buildCalendarUI(eventDates, macroDates)}
 
-        <div class="sonar-track" style="margin-top:0.5rem">
-            <div class="sonar-line"></div>
-            <div class="sonar-items">${items || '<p style="font-size:0.75rem; color:var(--text-3); padding:0.5rem;">No near-term events.</p>'}</div>
+        <div class="sonar-timelines">
+            <div class="sonar-timeline-section">
+                <h4 class="sonar-section-title has-tooltip">Earnings Timeline</h4>
+                <div class="sonar-track">
+                    <div class="sonar-line"></div>
+                    <div class="sonar-items">${earningsItems || '<p class="sonar-none">No near-term reports.</p>'}</div>
+                </div>
+            </div>
+            
+            <div class="sonar-timeline-section">
+                <h4 class="sonar-section-title has-tooltip">Macro Timeline</h4>
+                <div class="sonar-track macro-track">
+                    <div class="sonar-line macro-line"></div>
+                    <div class="sonar-items">${macroItems || '<p class="sonar-none">No near-term releases.</p>'}</div>
+                </div>
+            </div>
         </div>
     </div>`;
 }
@@ -1530,6 +1628,56 @@ function renderAnalytics(data, cont) {
         </tr>`;
     }).join('');
 
+    // --- ACADEMY MODAL LOGIC ---
+    function openAcademyModal(term) {
+        const lesson = ACADEMY_LESSONS[term];
+        if (!lesson) return;
+
+        $('academy-title').textContent = term;
+        $('academy-body').innerHTML = lesson.body;
+        
+        const metaHtml = Object.entries(lesson.meta).map(([key, val]) => `
+            <div class="academy-meta-item">
+                <span class="academy-meta-label">${key}</span>
+                <span class="academy-meta-val">${val}</span>
+            </div>
+        `).join('');
+        $('academy-meta').innerHTML = metaHtml;
+
+        $('academy-modal-overlay').classList.remove('hidden');
+    }
+
+    function closeAcademyModal() {
+        $('academy-modal-overlay').classList.add('hidden');
+    }
+
+    $('academy-modal-close').onclick = closeAcademyModal;
+    $('academy-modal-done').onclick = closeAcademyModal;
+    $('academy-modal-overlay').onclick = (e) => { if (e.target === $('academy-modal-overlay')) closeAcademyModal(); };
+
+    // Delegate click for tooltips
+    cont.onclick = (e) => {
+        const tooltipEl = e.target.closest('.has-tooltip');
+        if (tooltipEl) {
+            let term = tooltipEl.textContent.trim();
+            
+            // Logic for Sonar/Macro/Earnings fallback
+            if (term.length <= 5 && /^[A-Z]+$/.test(term)) {
+                // It's a ticker
+                term = 'Earnings Timeline';
+            } else if (!ACADEMY_LESSONS[term]) {
+                // Check if it's a known macro event but maybe label differs
+                if (term.includes('CPI')) term = 'CPI (Inflation)';
+                else if (term.includes('FOMC')) term = 'FOMC Statement';
+                else if (term.includes('NFP') || term.includes('Employment')) term = 'NFP (Employment)';
+            }
+
+            if (ACADEMY_LESSONS[term]) {
+                openAcademyModal(term);
+            }
+        }
+    };
+
     cont.innerHTML = `
         ${statsHtml}
         ${buildBenchmarkChart(bmark)}
@@ -1559,7 +1707,7 @@ function renderAnalytics(data, cont) {
                 ${flagChips ? `<div class="div-flag-list">${flagChips}</div>` : ''}
             </div>
             <div class="analytics-card">
-                <h3>Sector Breakdown</h3>
+                <h3 class="has-tooltip">Sector Breakdown</h3>
                 <div class="sector-bars">${sectorBars || '<p style="color:var(--text-3);font-size:.85rem">—</p>'}</div>
             </div>
         </div>
@@ -1567,7 +1715,7 @@ function renderAnalytics(data, cont) {
             <div id="alpha-quadrant-container" style="flex:1">
                 ${buildAlphaQuadrant(hs)}
             </div>
-            ${buildEventSonar(hs)}
+            ${buildEventSonar(hs, data.macro_catalysts)}
         </div>
         ${buildStressTest(stress, portBeta)}
         ${buildCorrWeb(corr)}
@@ -1704,16 +1852,21 @@ function renderActions(items, cont) {
     }
     const html = items.map(item => `
         <div class="action-item ${item.type}">
-            <span class="action-icon">${item.icon}</span>
-            <div class="action-text">
+            <div class="action-header">
+                <span class="action-category">${item.category || 'Portfolio'}</span>
+                <span class="action-type-badge">${item.type}</span>
+            </div>
+            <div class="action-title-row">
                 <div style="display:flex; align-items:center;">
                     <strong>${item.title}</strong>
                     <span class="action-info-icon has-tooltip" data-tip="${item.beginner_tip || ''}">ⓘ</span>
                 </div>
+            </div>
+            <div class="action-text">
                 <span class="technical-desc">${item.technical_desc || item.sub || ''}</span>
                 ${item.execution_example ? `
                 <div class="execution-example">
-                    <span class="execution-label">Execution Example</span>
+                    <span class="execution-label">Execution Step</span>
                     <div class="execution-content">${item.execution_example}</div>
                 </div>` : ''}
             </div>
@@ -1721,8 +1874,8 @@ function renderActions(items, cont) {
 
     cont.innerHTML = `
         <div class="actions-panel" style="animation: fadeUp 0.4s ease forwards">
-            <h3>Personalized Recommendations</h3>
-            <div class="action-items-list">${html}</div>
+            <h3>Strategic Recommendations</h3>
+            <div class="action-items-grid">${html}</div>
         </div>`;
 }
 

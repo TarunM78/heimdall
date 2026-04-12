@@ -305,13 +305,21 @@ def get_portfolio_analytics(holdings: list[dict]) -> dict:
     for sector, pct in sector_weights.items():
         if pct > 50 and sector not in ("Unknown",):
             flags.append(f"High concentration in {sector} ({pct:.0f}%)")
-    for t in tickers:
-        if ticker_info[t]["weight_pct"] > 40:
-            flags.append(f"{t} dominates portfolio at {ticker_info[t]['weight_pct']}%")
+    # -----------------------------------------------------------------------
+    # 11. Macro Catalysts (Mocked for Demo)
+    # -----------------------------------------------------------------------
+    # Upcoming curated major releases based on today's date (2026-04-12)
+    macro_catalysts = [
+        {"label": "FOMC Statement", "date": "2026-05-01", "impact": "High"},
+        {"label": "NFP (Employment)", "date": "2026-05-01", "impact": "High"},
+        {"label": "CPI (Inflation)", "date": "2026-05-13", "impact": "High"},
+        {"label": "Retail Sales", "date": "2026-05-15", "impact": "Medium"},
+    ]
 
     return {
         "total_value": round(total_value, 2),
         "holdings":    list(ticker_info.values()),
+        "macro_catalysts": macro_catalysts,
         "portfolio_metrics": {
             "annual_return_pct":     portfolio_ann_return,
             "annual_volatility_pct": portfolio_ann_vol,

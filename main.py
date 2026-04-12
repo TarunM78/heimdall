@@ -1,3 +1,10 @@
+import typing_extensions
+if not hasattr(typing_extensions, "Sentinel"):
+    class Sentinel:
+        def __repr__(self) -> str:
+            return "Sentinel"
+    typing_extensions.Sentinel = Sentinel()
+
 import os
 from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Header
 from fastapi.staticfiles import StaticFiles
@@ -393,7 +400,7 @@ def snaptrade_connect(user_id: str = Depends(get_current_user)):
         snaptrade_db[user_id] = user_cred
 
     # Generate portal URL
-    redirect_uri = os.getenv("AUTH0_CALLBACK_URL", "http://localhost:8000")
+    redirect_uri = os.getenv("AUTH0_CALLBACK_URL", "http://127.0.0.1:8000/")
     portal_url = snaptrade_service.get_login_url(
         user_cred["snaptrade_user_id"], 
         user_cred["snaptrade_user_secret"],

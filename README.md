@@ -76,7 +76,7 @@ Heimdall is an advanced, high-fidelity financial dashboard designed to provide i
    chmod +x start.sh
    ./start.sh
    ```
-   The application will be available at `http://localhost:8000`.
+   The application will be available at `http://127.0.0.1:8000/`.
 
 ---
 
