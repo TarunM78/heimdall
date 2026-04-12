@@ -113,6 +113,8 @@ def get_portfolio_analytics(holdings: list[dict]) -> dict:
             if not sector:
                 sector = "Unknown / Other"
 
+            description = info.get("longBusinessSummary") or info.get("description") or ""
+            
             gain_loss = (current_price - cost_basis) * qty if qty and cost_basis else 0
             gain_pct  = ((current_price - cost_basis) / cost_basis * 100) if cost_basis else 0
 
@@ -146,6 +148,7 @@ def get_portfolio_analytics(holdings: list[dict]) -> dict:
                 "dividend_yield_pct": round(div_yield * 100, 2) if div_yield else None,
                 "annual_return_pct":  annual_return_pct,
                 "upcoming_earnings":  upcoming_earnings,
+                "description":        description,
             }
         except Exception as e:
             print(f"Error fetching {t}: {e}")
@@ -158,6 +161,7 @@ def get_portfolio_analytics(holdings: list[dict]) -> dict:
                 "pe_ratio": None, "pe_type": None,
                 "price_to_sales": None, "price_to_book": None, "dividend_yield_pct": None,
                 "annual_return_pct": None, "upcoming_earnings": None,
+                "description": "",
             }
 
     # -----------------------------------------------------------------------

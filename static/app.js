@@ -9,6 +9,10 @@ let holdings = [];
 let profile = {};
 let activeTab = 'brief';
 let tabs = {}; // populated after DOM ready
+let alphaZoomLevel = 0; // 0=Global, 1=Focus, 2=Tight, 8=Deep
+let alphaPanX = 0;
+let alphaPanY = 0;
+let lastAnalyticsData = null;
 
 /* ---- DOM ---- */
 const $ = id => document.getElementById(id);
@@ -598,6 +602,7 @@ async function loadAnalytics() {
         const res = await fetchAuthorized(`${API}/api/analytics`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
+        lastAnalyticsData = data;
         renderAnalytics(data, cont);
     } catch (e) {
         cont.innerHTML = `<div class="empty-state"><p style="color:var(--bearish)">Analytics failed: ${e.message}</p></div>`;
@@ -634,8 +639,8 @@ function buildBenchmarkChart(bmark) {
     const allV = [...port, ...spy];
     const minV = Math.min(...allV), maxV = Math.max(...allV);
     const range = (maxV - minV) || 1;
-    const W = 560, H = 140;
-    const pad = { t: 12, b: 20, l: 44, r: 10 };
+    const W = 1000, H = 140;
+    const pad = { t: 12, b: 24, l: 44, r: 10 };
     const cw = W - pad.l - pad.r;
     const ch = H - pad.t - pad.b;
     const xs = i => ((i / (port.length - 1)) * cw).toFixed(1);
@@ -649,7 +654,24 @@ function buildBenchmarkChart(bmark) {
     const yLabels = Array.from({ length: ticks + 1 }, (_, k) => {
         const v = minV + (range * k / ticks);
         const y = ys(v);
-        return `<text class="ch-axis-lbl" x="-6" y="${y}" text-anchor="end" dominant-baseline="middle">${v >= 0 ? '+' : ''}${v.toFixed(1)}%</text>`;
+        return `<text class="ch-axis-lbl" x="-8" y="${y}" text-anchor="end" dominant-baseline="middle">${v.toFixed(0)}%</text>`;
+    }).join('');
+
+    // X-axis monthly labels
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let lastMonth = -1;
+    const xLabels = bmark.dates.map((d, i) => {
+        const parts = d.split('-');
+        const mIdx = parseInt(parts[1], 10) - 1;
+        if (mIdx !== lastMonth) {
+            lastMonth = mIdx;
+            const x = xs(i);
+            return `
+                <text class="ch-axis-lbl" x="${x}" y="${ch + 18}" text-anchor="middle">${monthNames[mIdx]}</text>
+                <line x1="${x}" y1="0" x2="${x}" y2="${ch}" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 2" opacity="0.2"/>
+            `;
+        }
+        return '';
     }).join('');
 
     const zeroY = ys(0);
@@ -665,15 +687,18 @@ function buildBenchmarkChart(bmark) {
         <div class="bench-header">
             <h3>Performance vs S&P 500 (1yr)</h3>
             <div class="bench-returns">
-                <span class="bench-tag" style="background:var(--brand-dim);border-color:var(--brand)"><span class="bench-dot" style="background:var(--brand)"></span>Portfolio: <strong class="${portRet >= 0 ? 'pos' : 'neg'}">${portSign}${portRet}%</strong></span>
+                <span class="bench-tag" style="background:rgba(192, 178, 248, 0.1); border-color:#c0b2f8">
+                    <span class="bench-dot" style="background:#c0b2f8"></span>Portfolio: <strong class="${portRet >= 0 ? 'pos' : 'neg'}">${portSign}${portRet}%</strong>
+                </span>
                 <span class="bench-tag"><span class="bench-dot" style="background:var(--text-3)"></span>SPY: <strong>${spySign}${spyRet}%</strong></span>
-                <span class="bench-tag" style="background:var(--brand-dim);border-color:var(--border-active)">Alpha: <strong class="${alphaClass}">${alphaSign}${bmark.alpha}%</strong></span>
+                <span class="bench-tag" style="background:rgba(192, 178, 248, 0.1); border-color:var(--border-active)">Alpha: <strong class="${alphaClass}">${alphaSign}${bmark.alpha}%</strong></span>
             </div>
         </div>
-        <svg class="bench-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <svg class="bench-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%; height:160px; overflow:visible">
             <g transform="translate(${pad.l},${pad.t})">
-                <line x1="0" y1="${zeroY}" x2="${cw}" y2="${zeroY}" class="ch-zero-line"/>
+                <line x1="0" y1="${zeroY}" x2="${cw}" y2="${zeroY}" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
                 ${yLabels}
+                ${xLabels}
                 <polyline class="ch-line-spy" points="${sPts}"/>
                 <polyline class="ch-line-port" points="${pPts}"/>
             </g>
@@ -688,16 +713,30 @@ function buildCorrWeb(corrData) {
     return `
     <div class="analytics-card">
         <h3>Correlation Cluster Map</h3>
-        <p class="corr-desc">Holdings are pulled together by correlation strength &mdash; <span style="color:var(--text-1)">clustered = move together</span>, distant = uncorrelated. <span style="color:var(--text-3)">Dark edges = inverse</span>. Watch the physics settle.</p>
-        <div style="display:flex;justify-content:center; touch-action:none;">
-            <svg id="corr-svg" width="460" height="390" class="corr-canvas" xmlns="http://www.w3.org/2000/svg" style="border-radius: var(--radius-md)"></svg>
+        <p class="corr-desc">Holdings are pulled together by correlation strength &mdash; <span style="color:var(--text-1)">clustered = move together</span>, distant = uncorrelated. <span style="color:var(--text-3)">Dark edges = inverse</span>.</p>
+        
+        <div class="corr-layout">
+            <div id="corr-sidecar-left" class="corr-sidecar left">
+                <!-- Profile injected here -->
+            </div>
+
+            <div id="corr-container" class="corr-map-container">
+                <svg id="corr-svg" width="460" height="390" class="corr-canvas" xmlns="http://www.w3.org/2000/svg" style="border-radius: var(--radius-md)"></svg>
+            </div>
+
+            <div id="corr-sidecar-right" class="corr-sidecar right">
+                <!-- Partners injected here -->
+            </div>
         </div>
-        <p id="corr-note" class="corr-desc" style="margin-top:.4rem;text-align:center"></p>
+        
+        <p id="corr-note" class="corr-desc" style="margin-top:.7rem;text-align:center"></p>
     </div>`;
 }
 
-function initCorrSim(corrData) {
+function initCorrSim(corrData, allHoldings) {
     const svg = document.getElementById('corr-svg');
+    const sidecarL = document.getElementById('corr-sidecar-left');
+    const sidecarR = document.getElementById('corr-sidecar-right');
     if (!svg || !corrData) return;
     const W = 460, H = 390;
     const { tickers, matrix } = corrData;
@@ -722,6 +761,94 @@ function initCorrSim(corrData) {
 
     let svgEdges = [];
     let svgNodes = [];
+    let sidecarTimeout = null;
+
+    // Utility to get holdings info
+    const getInfo = t => allHoldings.find(h => h.ticker === t) || {};
+
+    const updateSidecar = (idx) => {
+        if (idx === null) {
+            // Debounce the hide to prevent flickering
+            sidecarTimeout = setTimeout(() => {
+                if (sidecarL) sidecarL.classList.remove('active');
+                if (sidecarR) sidecarR.classList.remove('active');
+            }, 400);
+            return;
+        }
+
+        if (sidecarTimeout) {
+            clearTimeout(sidecarTimeout);
+            sidecarTimeout = null;
+        }
+
+        const ticker = tickers[idx];
+        const info = getInfo(ticker);
+        
+        // ---- Left Sidecar (Profile) ----
+        if (sidecarL) {
+            const shortDesc = info.description 
+                ? (info.description.length > 280 ? info.description.substring(0, 277) + '...' : info.description)
+                : 'Description unavailable.';
+
+            const descHtml = `<div class="sidecar-desc" style="margin-top:1rem; font-size:0.78rem; line-height:1.5; color:var(--text-3); opacity:0.9;">${shortDesc}</div>`;
+
+            sidecarL.innerHTML = `
+                <div class="sidecar-card">
+                    <div class="sidecar-ticker">${ticker}</div>
+                    <div class="sidecar-name">${info.long_name || ticker}</div>
+                    <div class="sidecar-sector">${info.sector || 'Unknown Sector'}</div>
+                    ${descHtml}
+                </div>
+            `;
+            sidecarL.classList.add('active');
+        }
+
+        // ---- Right Sidecar (Partners) ----
+        if (sidecarR) {
+            const partners = [];
+            for (let j = 0; j < n; j++) {
+                if (idx === j) continue;
+                partners.push({ idx: j, ticker: tickers[j], corr: matrix[idx][j] });
+            }
+            partners.sort((a, b) => Math.abs(b.corr) - Math.abs(a.corr));
+            const top4 = partners.slice(0, 4);
+
+            const buildReason = (curr, p) => {
+                const pInfo = getInfo(p.ticker);
+                const reasons = [];
+                if (p.corr > 0.8) reasons.push("Direct Lockstep");
+                else if (p.corr > 0.5) reasons.push("High Correlation");
+                else if (p.corr < -0.3) reasons.push("Inverse action");
+
+                if (curr.sector && curr.sector === pInfo.sector) reasons.push("Sector Sympathy");
+                return reasons.length ? reasons.join(' · ') : "Market Coupling";
+            };
+
+            const partnersHtml = top4.map(p => {
+                const pInfo = getInfo(p.ticker);
+                return `
+                <div class="partner-item">
+                    <div class="partner-top">
+                        <span class="partner-ticker">${p.ticker}</span>
+                        <span class="partner-corr" style="color:${p.corr > 0 ? 'var(--bullish)' : 'var(--bearish)'}">r = ${p.corr.toFixed(2)}</span>
+                    </div>
+                    <div class="partner-info">${pInfo.sector || 'Unknown'}</div>
+                    <div class="partner-reason">${buildReason(info, p)}</div>
+                </div>`;
+            }).join('');
+
+            sidecarR.innerHTML = `
+                <div class="sidecar-card">
+                    <div class="sidecar-partners">
+                        <h4>Strongest Ties</h4>
+                        ${partnersHtml || '<p style="font-size:0.75rem;color:var(--text-3)">Isolated performance.</p>'}
+                    </div>
+                    <p class="corr-desc" style="margin-top:1rem; font-size:0.65rem; opacity:0.6;">*Based on 1-year daily trailing correlation coefficients.</p>
+                </div>
+            `;
+            sidecarR.classList.add('active');
+        }
+    };
 
     // Initialize SVG elements
     const edgesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -782,8 +909,18 @@ function initCorrSim(corrData) {
             g.setPointerCapture(e.pointerId);
             e.stopPropagation();
         });
-        g.addEventListener('pointerenter', () => { hoveredNode = i; if (!rafId) tick(); });
-        g.addEventListener('pointerleave', () => { if (hoveredNode === i) hoveredNode = null; if (!rafId) tick(); });
+        g.addEventListener('pointerenter', () => { 
+            hoveredNode = i; 
+            updateSidecar(i);
+            if (!rafId) tick(); 
+        });
+        g.addEventListener('pointerleave', () => { 
+            if (hoveredNode === i) {
+                hoveredNode = null; 
+                updateSidecar(null);
+            }
+            if (!rafId) tick(); 
+        });
     }
 
     svg.addEventListener('pointermove', e => {
@@ -981,11 +1118,11 @@ function buildTreemap(holdings) {
         else { color = '#444444'; txtColor = '#ffffff'; }
 
         return `
-            <g transform="translate(${r.x}, ${r.y})" style="cursor:help;">
+            <g transform="translate(${r.x}, ${r.y})" class="tree-node" data-ticker="${r.t}" style="cursor:crosshair;">
                 <title>${r.t}: ${r.val.toFixed(1)}% weight | 1Y: ${r.ret > 0 ? '+' : ''}${r.ret.toFixed(1)}%</title>
-                <rect width="${r.w}" height="${r.h}" fill="${color}" stroke="#000" stroke-width="2"></rect>
-                ${(r.w > 30 && r.h > 20) ? `<text x="${r.w/2}" y="${r.h/2 - 2}" font-size="${Math.min(18, Math.max(10, r.w/4))}px" font-weight="700" fill="${txtColor}" text-anchor="middle" dominant-baseline="central">${r.t}</text>
-                                           <text x="${r.w/2}" y="${r.h/2 + 12}" font-size="${Math.min(11, Math.max(8, r.w/6))}px" font-weight="500" fill="${txtColor}" text-anchor="middle" dominant-baseline="central">${r.ret > 0 ? '+' : ''}${r.ret.toFixed(1)}%</text>` : ''}
+                <rect width="${r.w}" height="${r.h}" fill="${color}" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"></rect>
+                ${(r.w > 25 && r.h > 20) ? `<text x="${r.w/2}" y="${r.h/2 - 2}" font-size="${Math.min(14, Math.max(9, r.w/4.5))}px" font-weight="700" fill="${txtColor}" text-anchor="middle" dominant-baseline="central">${r.t}</text>
+                                           <text x="${r.w/2}" y="${r.h/2 + 10}" font-size="${Math.min(10, Math.max(7, r.w/7))}px" font-weight="500" fill="${txtColor}" text-anchor="middle" dominant-baseline="central">${r.ret > 0 ? '+' : ''}${r.ret.toFixed(1)}%</text>` : ''}
             </g>
         `;
     }).join('');
@@ -994,12 +1131,81 @@ function buildTreemap(holdings) {
     <div class="analytics-card" style="margin-bottom:1rem">
         <h3 class="has-tooltip" data-tip="Box size = Portfolio Weight. Color = 1-Year Return.">Performance Treemap</h3>
         <p class="corr-desc">Institutional visualization for exposure attribution. <span style="color:#fff">White = Overperforming</span>, <span style="color:#666">Grey = Underperforming</span>.</p>
-        <div style="display:flex; justify-content:center; margin-top: 1rem;">
-            <svg width="460" height="220" viewBox="0 0 ${W} ${H}" style="border-radius:var(--radius-sm)">
-                ${boxesHtml}
-            </svg>
+        
+        <div class="corr-layout">
+            <div id="tree-sidecar-left" class="corr-sidecar left"></div>
+
+            <div id="tree-container" class="corr-map-container" style="height:${H}px; align-items:center;">
+                <svg width="460" height="${H}" viewBox="0 0 ${W} ${H}" style="border-radius:var(--radius-sm)">
+                    ${boxesHtml}
+                </svg>
+            </div>
+
+            <div id="tree-sidecar-right" class="corr-sidecar right"></div>
         </div>
     </div>`;
+}
+
+function initTreemapInteractivity(allHoldings) {
+    const nodes = document.querySelectorAll('.tree-node');
+    const sidecarL = document.getElementById('tree-sidecar-left');
+    const sidecarR = document.getElementById('tree-sidecar-right');
+    let treeTimeout = null;
+
+    const getInfo = t => allHoldings.find(h => h.ticker === t) || {};
+
+    const updateSidecars = (ticker) => {
+        if (!ticker) {
+            treeTimeout = setTimeout(() => {
+                if (sidecarL) sidecarL.classList.remove('active');
+                if (sidecarR) sidecarR.classList.remove('active');
+            }, 400);
+            return;
+        }
+
+        if (treeTimeout) { clearTimeout(treeTimeout); treeTimeout = null; }
+
+        const info = getInfo(ticker);
+
+        if (sidecarL) {
+            sidecarL.innerHTML = `
+                <div class="sidecar-card">
+                    <div class="sidecar-ticker">${ticker}</div>
+                    <div class="sidecar-name">${info.long_name || ticker}</div>
+                    <div class="sidecar-sector">${info.sector || 'Unknown Sector'}</div>
+                    
+                    <div class="sidecar-field"><span>Quantity</span><span>${(info.qty || 0).toLocaleString()}</span></div>
+                    <div class="sidecar-field"><span>Market Value</span><span>$${(info.current_price * info.qty || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</span></div>
+                    <div class="sidecar-field"><span>Avg Cost</span><span>$${(info.cost_basis || 0).toFixed(2)}</span></div>
+                    <div class="sidecar-field"><span>Weight</span><span>${info.weight_pct || 0}%</span></div>
+                </div>
+            `;
+            sidecarL.classList.add('active');
+        }
+
+        if (sidecarR) {
+            const contribution = ((info.weight_pct || 0) * (info.annual_return_pct || 0) / 100).toFixed(2);
+            const pnl = info.gain_loss ?? 0;
+            const pnlPct = info.gain_pct ?? 0;
+            const pnlCls = pnl >= 0 ? 'pos' : 'neg';
+
+            sidecarR.innerHTML = `
+                <div class="sidecar-card">
+                    <div class="sidecar-partners"><h4>Performance Hub</h4></div>
+                    <div class="sidecar-field"><span>1Y Return</span><span style="color:${(info.annual_return_pct||0)>=0?'var(--bullish)':'var(--bearish)'}">${info.annual_return_pct || 0}%</span></div>
+                    <div class="sidecar-field"><span>Total P&L ($)</span><span class="${pnlCls}">$${Math.abs(pnl).toLocaleString()}</span></div>
+                    <div class="sidecar-field"><span>Total P&L (%)</span><span class="${pnlCls}">${pnlPct.toFixed(2)}%</span></div>
+                    <div class="sidecar-field"><span>Contrib. to Port.</span><span style="color:var(--brand)">${contribution}%</span></div>
+                </div>
+            `;
+            sidecarR.classList.add('active');
+        }
+    };
+
+    nodes.forEach(n => {
+        n.addEventListener('pointerenter', () => updateSidecars(n.getAttribute('data-ticker')));
+        n.addEventListener('pointerleave', () => updateSidecars(null));
+    });
 }
 
 /* ---- Stress test ---- */
@@ -1030,13 +1236,35 @@ function buildAlphaQuadrant(holdings) {
     const pad = 35;
     
     // Limits
-    let minVol = Math.min(0, ...points.map(p => p.annual_volatility_pct));
-    let maxVol = Math.max(10, ...points.map(p => p.annual_volatility_pct));
-    let minRet = Math.min(0, ...points.map(p => p.annual_return_pct));
-    let maxRet = Math.max(10, ...points.map(p => p.annual_return_pct));
+    let minVol, maxVol, minRet, maxRet;
     
-    maxVol += 5; minVol -= 5;
-    maxRet += 5; minRet -= 5;
+    if (alphaZoomLevel > 0) {
+        minVol = Math.min(...points.map(p => p.annual_volatility_pct));
+        maxVol = Math.max(...points.map(p => p.annual_volatility_pct));
+        minRet = Math.min(...points.map(p => p.annual_return_pct));
+        maxRet = Math.max(...points.map(p => p.annual_return_pct));
+        
+        // Dynamic padding based on zoom level:
+        // L1: 15%, L2: 12%, L3: 9% ... L8: 2%
+        const pFac = Math.max(0.02, 0.15 - (alphaZoomLevel - 1) * 0.02);
+
+        const vR = (maxVol - minVol) || 1;
+        const rR = (maxRet - minRet) || 1;
+        minVol -= vR * pFac; maxVol += vR * pFac;
+        minRet -= rR * pFac; maxRet += rR * pFac;
+    } else {
+        // Global View (Level 0)
+        minVol = Math.min(0, ...points.map(p => p.annual_volatility_pct));
+        maxVol = Math.max(10, ...points.map(p => p.annual_volatility_pct));
+        minRet = Math.min(0, ...points.map(p => p.annual_return_pct));
+        maxRet = Math.max(10, ...points.map(p => p.annual_return_pct));
+        maxVol += 5; minVol -= 5;
+        maxRet += 5; minRet -= 5;
+    }
+
+    // Apply Pan
+    minVol += alphaPanX; maxVol += alphaPanX;
+    minRet += alphaPanY; maxRet += alphaPanY;
 
     const vRange = (maxVol - minVol) || 1;
     const rRange = (maxRet - minRet) || 1;
@@ -1066,7 +1294,20 @@ function buildAlphaQuadrant(holdings) {
 
     return `
     <div class="analytics-card">
-        <h3>The Alpha Quadrant</h3>
+        <div class="card-header">
+            <h3>The Alpha Quadrant</h3>
+            <div class="btn-group">
+                <button id="alpha-zoom-out" class="icon-btn" title="Zoom Out (–)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+                <button id="alpha-zoom-reset" class="icon-btn ${alphaZoomLevel === 1 ? 'active' : ''}" title="Reset Focus (🔍)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+                <button id="alpha-zoom-in" class="icon-btn" title="Zoom In (+)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </div>
+        </div>
         <p class="corr-desc">Risk (Annual Volatility) vs Reward (1Y Return). Ideal position is Top-Left.</p>
         <div style="display:flex;justify-content:center">
             <svg viewBox="0 0 ${W} ${H}" class="alpha-svg" width="100%" height="auto" style="max-width:460px">
@@ -1078,8 +1319,59 @@ function buildAlphaQuadrant(holdings) {
 }
 
 /* ---- Catalyst Radar (Event Sonar) ---- */
+function buildCalendarUI(eventDates) {
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    
+    // Start of current week (Monday)
+    const start = new Date(now);
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+    start.setDate(diff);
+
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const headHtml = weekdays.map(d => `<div class="cal-head">${d}</div>`).join('');
+    
+    let daysHtml = '';
+    const temp = new Date(start);
+    
+    for (let i = 0; i < 28; i++) {
+        const isToday = temp.getTime() === now.getTime();
+        const dateStr = temp.toISOString().split('T')[0];
+        
+        // Find events on this day
+        const dayEvents = eventDates.filter(d => {
+            const dStr = d.date.toISOString().split('T')[0];
+            return dStr === dateStr;
+        });
+
+        const hasEvent = dayEvents.length > 0;
+        const tickers = dayEvents.map(e => e.ticker).join(', ');
+        const tip = hasEvent ? `data-tip="${tickers} Earnings"` : '';
+        const eventCls = hasEvent ? 'has-event has-tooltip' : '';
+        const todayCls = isToday ? 'today' : '';
+
+        daysHtml += `
+            <div class="cal-day ${todayCls} ${eventCls}" ${tip}>
+                ${temp.getDate()}
+                ${hasEvent ? '<div class="event-dot"></div>' : ''}
+            </div>
+        `;
+        temp.setDate(temp.getDate() + 1);
+    }
+
+    return `
+        <div class="catalyst-calendar">
+            <div class="calendar-grid">
+                ${headHtml}
+                ${daysHtml}
+            </div>
+        </div>
+    `;
+}
+
 function buildEventSonar(holdings) {
-    const dates = holdings.filter(h => h.upcoming_earnings).map(h => {
+    const eventDates = holdings.filter(h => h.upcoming_earnings).map(h => {
         const parts = h.upcoming_earnings.split('-');
         return {
             ticker: h.ticker, 
@@ -1087,12 +1379,10 @@ function buildEventSonar(holdings) {
         };
     }).sort((a, b) => a.date - b.date);
     
-    if (!dates.length) return '';
-
     const now = new Date();
     now.setHours(0,0,0,0);
     
-    let items = dates.map(d => {
+    let items = eventDates.map(d => {
         const diffTime = d.date - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         let dayStr;
@@ -1114,11 +1404,14 @@ function buildEventSonar(holdings) {
 
     return `
     <div class="analytics-card">
-        <h3>Catalyst Radar</h3>
+        <h3 class="has-tooltip" data-tip="Calendar shows coming 4 weeks. Dots = Earnings dates.">Catalyst Radar</h3>
         <p class="corr-desc">Upcoming earnings and confirmed macro catalysts.</p>
-        <div class="sonar-track">
+        
+        ${buildCalendarUI(eventDates)}
+
+        <div class="sonar-track" style="margin-top:0.5rem">
             <div class="sonar-line"></div>
-            <div class="sonar-items">${items}</div>
+            <div class="sonar-items">${items || '<p style="font-size:0.75rem; color:var(--text-3); padding:0.5rem;">No near-term events.</p>'}</div>
         </div>
     </div>`;
 }
@@ -1247,10 +1540,10 @@ function renderAnalytics(data, cont) {
                     <div class="div-ring">
                         <svg width="88" height="88" viewBox="0 0 88 88">
                             <circle class="div-ring-bg"   cx="44" cy="44" r="34"/>
-                            <circle class="div-ring-fill" cx="44" cy="44" r="34" stroke="${ringColor}"
+                            <circle class="div-ring-fill" cx="44" cy="44" r="34" stroke="#c0b2f8"
                                 stroke-dasharray="${filled} ${circ}"/>
                         </svg>
-                        <div class="div-ring-label" style="color:${ringColor}">${score}</div>
+                        <div class="div-ring-label" style="color:#ffffff">${score}</div>
                     </div>
                     <div class="div-ring-meta">
                         <div class="div-label" style="color:${ringColor}">${scoreLabel}</div>
@@ -1271,7 +1564,9 @@ function renderAnalytics(data, cont) {
             </div>
         </div>
         <div class="analytics-row">
-            ${buildAlphaQuadrant(hs)}
+            <div id="alpha-quadrant-container" style="flex:1">
+                ${buildAlphaQuadrant(hs)}
+            </div>
             ${buildEventSonar(hs)}
         </div>
         ${buildStressTest(stress, portBeta)}
@@ -1291,8 +1586,82 @@ function renderAnalytics(data, cont) {
             </div>
         </div>`;
 
-    // Kick off the correlation physics sim after DOM is written
-    if (corr) initCorrSim(corr);
+    // Kick off interactive sims after DOM is written
+    if (corr) initCorrSim(corr, hs);
+    initTreemapInteractivity(hs);
+
+    // Interactivity Setup
+    const refresh = () => { if (lastAnalyticsData) renderAnalytics(lastAnalyticsData, cont); };
+    const refreshAlphaOnly = () => {
+        const target = $('alpha-quadrant-container');
+        if (target) {
+            target.innerHTML = buildAlphaQuadrant(lastAnalyticsData.holdings);
+            setupAlphaQuadrantInteractivity();
+        }
+    };
+
+    function setupAlphaQuadrantInteractivity() {
+        const svg = document.querySelector('.alpha-svg');
+        const qCont = $('alpha-quadrant-container');
+        if (!svg || !qCont || !lastAnalyticsData) return;
+
+        // Button Listeners
+        if ($('alpha-zoom-in')) $('alpha-zoom-in').onclick = () => { alphaZoomLevel = Math.min(8, alphaZoomLevel + 1); refreshAlphaOnly(); };
+        if ($('alpha-zoom-out')) $('alpha-zoom-out').onclick = () => { alphaZoomLevel = Math.max(0, alphaZoomLevel - 1); if (alphaZoomLevel === 0) { alphaPanX = 0; alphaPanY = 0; } refreshAlphaOnly(); };
+        if ($('alpha-zoom-reset')) $('alpha-zoom-reset').onclick = () => { alphaZoomLevel = 0; alphaPanX = 0; alphaPanY = 0; refreshAlphaOnly(); };
+
+        // Pan Logic
+        let isDragging = false;
+        let startX, startY;
+
+        svg.onpointerdown = (e) => {
+            if (alphaZoomLevel === 0) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            svg.setPointerCapture(e.pointerId);
+            svg.style.cursor = 'grabbing';
+        };
+
+        svg.onpointermove = (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            startX = e.clientX;
+            startY = e.clientY;
+
+            // Convert pixels to units
+            // We need the current vRange/rRange which are internal to buildAlphaQuadrant
+            // However, we can use the SVG viewBox dimensions (460x280) and padding (35)
+            // Or easier: fetch them from the current transformation if possible.
+            // For now, let's estimate based on W=460, H=280, pad=35
+            const W = 460, H = 280, pad = 35;
+            const viewW = W - pad * 2;
+            const viewH = H - pad * 2;
+
+            // We calculate the current ranges based on level (similar to buildAlphaQuadrant)
+            const pts = lastAnalyticsData.holdings.filter(h => h.annual_volatility_pct != null && h.annual_return_pct != null);
+            let minV = Math.min(...pts.map(p => p.annual_volatility_pct));
+            let maxV = Math.max(...pts.map(p => p.annual_volatility_pct));
+            let minR = Math.min(...pts.map(p => p.annual_return_pct));
+            let maxR = Math.max(...pts.map(p => p.annual_return_pct));
+            const pFac = Math.max(0.02, 0.15 - (alphaZoomLevel - 1) * 0.02);
+            const vR = (maxV - minV || 1) * (1 + pFac * 2);
+            const rR = (maxR - minR || 1) * (1 + pFac * 2);
+
+            alphaPanX -= (dx / viewW) * vR;
+            alphaPanY += (dy / viewH) * rR; // Inverted Y in SVG
+
+            refreshAlphaOnly();
+        };
+
+        svg.onpointerup = svg.onpointercancel = () => {
+            isDragging = false;
+            svg.style.cursor = alphaZoomLevel > 0 ? 'grab' : 'default';
+        };
+    }
+
+    setupAlphaQuadrantInteractivity();
 }
 
 
